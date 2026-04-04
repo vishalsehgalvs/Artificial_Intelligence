@@ -1,0 +1,26 @@
+# Core LangChain
+langchain
+langchain-core
+langchain-community
+
+# LLM Providers
+langchain-google-genai       # Google Gemini (free tier available)
+langchain-openai              # OpenAI GPT-4 (paid)
+langchain-mistralai           # Mistral (free tier available)
+langchain-groq                # Groq — very fast, free tier with LLaMA/Mistral
+langchain-ollama              # Ollama — run models locally for free
+langchain-huggingface         # HuggingFace models (cloud + local)
+
+# Embeddings & Vector Store
+faiss-cpu                     # local vector database for similarity search
+
+# Output Parsing
+pydantic                      # structured output / data validation
+
+# UI
+streamlit                     # turn Python scripts into web apps
+
+# Utilities
+python-dotenv                 # load API keys from .env file
+tiktoken                      # token counting (used by OpenAI models)
+numpy                         # numerical operations (used in similarity_search.py)
