@@ -1,5 +1,65 @@
 # Artificial Intelligence
 
+> A learning repo for Generative AI and LangChain — notes, working code examples, and mini projects. Everything is written in plain English, no jargon.
+
+---
+
+## Repo Structure
+
+```
+Artificial_Intelligence/
+│
+├── chatmodels/                  ← how to talk to LLMs
+│   ├── chat.py                  ← simplest model call (one question, one answer)
+│   ├── chatbot.py               ← CLI chatbot with memory + personality modes
+│   ├── huggingface.py           ← use open-source models via HuggingFace cloud
+│   ├── localmodel.py            ← run a model locally with Ollama (free, offline)
+│   ├── UIchatbot.py             ← Streamlit web UI chatbot
+│   └── notes.md                 ← theory: message types, temperature, providers
+│
+├── embeddingmodels/             ← how to convert text into numbers (vectors)
+│   ├── embeddings.py            ← embed text, measure similarity
+│   ├── similarity_search.py     ← store docs in FAISS vector DB, search by meaning
+│   └── notes.md                 ← theory: embeddings, RAG, vector databases
+│
+├── JobSage/                     ← mini project: extract structured job info from any posting
+│   ├── core.py                  ← CLI version
+│   ├── UIcore.py                ← Streamlit web UI version
+│   └── notes.md                 ← theory: structured output, Pydantic, prompt templates
+│
+├── README.md                    ← this file — full notes on GenAI, LLMs, LangChain
+├── requirements.txt             ← all Python packages needed
+├── .env.example                 ← template for your API keys
+└── .gitignore                   ← keeps secrets and cache out of git
+```
+
+---
+
+## Quick Start
+
+```bash
+# 1. Clone the repo
+git clone git@github.com:vishalsehgalvs/Artificial_Intelligence.git
+cd Artificial_Intelligence
+
+# 2. Create a virtual environment
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate    # Mac/Linux
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Set up your API key
+cp .env.example .env
+# Edit .env and add your Google API key (free at aistudio.google.com)
+
+# 5. Run your first example
+python chatmodels/chat.py
+```
+
+---
+
 ## Table of Contents
 
 1. [What is Generative AI?](#what-is-generative-ai)
