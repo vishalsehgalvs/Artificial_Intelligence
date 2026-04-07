@@ -4,33 +4,43 @@
 
 ---
 
+## What this repo covers
+
+This repo is split into three parts, each one building on the last:
+
+**Part 1 — LangChain, LLMs & Prompt Engineering**
+The fundamentals. What AI models are, how to call them, how to write good prompts, how to get structured output, and how LangChain ties it all together.
+
+**Part 2 — RAG, Vector Databases & Document Loaders**
+How to connect AI to your own data. Documents, PDFs, embeddings, vector databases, and the full RAG pipeline so the AI can answer questions based on your specific material.
+
+**Part 3 — Tools, AI Agents, Tool Calling, APIs & LangChain** _(upcoming)_
+How to give AI models the ability to take action — calling APIs, using tools, and building agents that can plan and execute multi-step tasks on their own.
+
+---
+
 ## Repo Structure
 
 ```
 Artificial_Intelligence/
 │
-├── chatmodels/                  ← how to talk to LLMs
-│   ├── chat.py                  ← simplest model call (one question, one answer)
-│   ├── chatbot.py               ← CLI chatbot with memory + personality modes
-│   ├── huggingface.py           ← use open-source models via HuggingFace cloud
-│   ├── localmodel.py            ← run a model locally with Ollama (free, offline)
-│   ├── UIchatbot.py             ← Streamlit web UI chatbot
-│   └── notes.md                 ← theory: message types, temperature, providers
+├── 01_LangChain_LLMs_and_Prompts/     ← Part 1: fundamentals
+│   ├── chat_models/                   ← talking to LLMs, memory, personality bots
+│   ├── embedding_models/              ← converting text to vectors, similarity search
+│   └── README.md                      ← full notes for Part 1
 │
-├── embeddingmodels/             ← how to convert text into numbers (vectors)
-│   ├── embeddings.py            ← embed text, measure similarity
-│   ├── similarity_search.py     ← store docs in FAISS vector DB, search by meaning
-│   └── notes.md                 ← theory: embeddings, RAG, vector databases
+├── 02_RAG_VectorDB_and_Document_Loaders/  ← Part 2: RAG pipeline
+│   ├── pdf_reader.py                  ← load a PDF and ask questions about it
+│   ├── text_reader.py                 ← same but with plain text files
+│   └── readme.md                      ← full notes for Part 2
 │
-├── JobSage/                     ← mini project: extract structured job info from any posting
-│   ├── core.py                  ← CLI version
-│   ├── UIcore.py                ← Streamlit web UI version
-│   └── notes.md                 ← theory: structured output, Pydantic, prompt templates
+├── 03_Tools_Agents_and_APIs/          ← Part 3: tools, agents, tool calling (upcoming)
+│   └── JobSage/                       ← extract structured data from job postings
 │
-├── README.md                    ← this file — full notes on GenAI, LLMs, LangChain
-├── requirements.txt             ← all Python packages needed
-├── .env.example                 ← template for your API keys
-└── .gitignore                   ← keeps secrets and cache out of git
+├── README.md                          ← this file
+├── requirements.txt                   ← all Python packages needed
+├── .env.example                       ← template for your API keys
+└── .gitignore                         ← keeps secrets and cache out of git
 ```
 
 ---
@@ -55,7 +65,7 @@ cp .env.example .env
 # Edit .env and add your Google API key (free at aistudio.google.com)
 
 # 5. Run your first example
-python chatmodels/chat.py
+python 01_LangChain_LLMs_and_Prompts/chat_models/hello_llm.py
 ```
 
 ---
