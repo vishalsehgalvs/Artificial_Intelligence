@@ -1,18 +1,14 @@
 # Chat Models — Notes
 
-# ====================
+## What's in this folder
 
-# What's in this folder:
-
-# - chat.py → simplest model call (one question, one answer)
-
-# - chatbot.py → CLI chatbot with memory + personality modes
-
-# - huggingface.py → using open-source models via HuggingFace cloud
-
-# - localmodel.py → running a model 100% locally via Ollama
-
-# - UIchatbot.py → browser-based chatbot UI with Streamlit
+| File                        | What it does                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| `hello_llm.py`              | The simplest possible demo — one question, one answer                           |
+| `personality_chatbot.py`    | A chatbot with memory and personality modes, runs in the terminal               |
+| `personality_chatbot_ui.py` | The same chatbot but with a proper browser interface using Streamlit            |
+| `open_source_model.py`      | Using open-source models from HuggingFace instead of paid APIs                  |
+| `run_model_locally.py`      | Running a model 100% on your own machine using Ollama — no internet, no API key |
 
 ---
 
