@@ -1,12 +1,11 @@
 # Embedding Models — Notes
 
-# =========================
+## What's in this folder
 
-# What's in this folder:
-
-# - embeddings.py → convert text to vectors, compare similarity by hand
-
-# - similarity_search.py → store docs in a vector DB and search by meaning
+| File                        | What it does                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `text_to_vectors.py`        | Converts sentences into vectors and compares them by meaning                 |
+| `find_similar_documents.py` | Stores documents in a vector database and searches by meaning — not keywords |
 
 ---
 
