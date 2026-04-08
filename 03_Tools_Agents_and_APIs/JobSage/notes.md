@@ -1,12 +1,11 @@
 # JobSage — Notes
 
-# ================
+## What's in this folder
 
-# What's in this folder:
-
-# - core.py → CLI version: paste a job description, get structured output
-
-# - UIcore.py → Streamlit web UI version
+| File               | What it does                                                                      |
+| ------------------ | --------------------------------------------------------------------------------- |
+| `job_parser.py`    | Terminal version — paste a job description and get clean structured data back     |
+| `job_parser_ui.py` | Browser version — same thing but with a proper web interface built with Streamlit |
 
 ---
 
