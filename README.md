@@ -30,8 +30,10 @@ Artificial_Intelligence/
 │   └── README.md                      ← full notes for Part 1
 │
 ├── 02_RAG_VectorDB_and_Document_Loaders/  ← Part 2: RAG pipeline
-│   ├── pdf_reader.py                  ← load a PDF and ask questions about it
-│   ├── text_reader.py                 ← same but with plain text files
+│   ├── load_and_split_pdf.py          ← load a PDF and split it into chunks
+│   ├── load_and_split_text.py         ← same but with plain text files
+│   ├── split_text_into_chunks.py      ← experiment with different chunking strategies
+│   ├── load_webpage.py                ← load content directly from a website URL
 │   └── readme.md                      ← full notes for Part 2
 │
 ├── 03_Tools_Agents_and_APIs/          ← Part 3: tools, agents, tool calling (upcoming)
