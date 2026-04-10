@@ -259,4 +259,256 @@ Fine-tuning means retraining the model on your data so it "remembers" it permane
 
 **The practical takeaway:** RAG is how you build AI systems that know about _your_ domain, _your_ documents, and _your_ data — without needing to train a new model or pay for a fine-tune. It's the go-to approach for real-world AI applications that need to answer questions from specific knowledge sources.
 
-The code in this folder (`load_and_split_pdf.py`, `load_and_split_text.py`, `split_text_into_chunks.py`, and `load_webpage.py`) shows working examples of each part of this pipeline end to end.
+The code in this folder shows working examples of each part of this pipeline end to end:
+
+| File                        | What it does                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| `load_and_split_pdf.py`     | Loads a PDF using `PyPDFLoader` and splits it into chunks                                         |
+| `load_and_split_text.py`    | Same thing but for plain `.txt` files                                                             |
+| `split_text_into_chunks.py` | Experiments with chunk size and overlap to see how splitting behaves                              |
+| `load_webpage.py`           | Loads content from a live website URL instead of a file                                           |
+| `vector_store_db.py`        | Takes documents, converts them to embeddings, stores them in Chroma, and runs a similarity search |
+
+`Generative_AI_part2_notes.pdf` contains the handwritten and typed notes for this whole section — useful as a companion reference alongside the code.
+
+---
+
+## How similarity search actually works — Cosine Similarity explained simply
+
+When you ask a question, the system converts it into a vector (a list of numbers). It also has all your document chunks stored as vectors. Now it needs to find which chunks are "closest" in meaning to your question.
+
+But how do you measure "closeness" between two lists of numbers?
+
+The most common method is called **cosine similarity**. Here's the intuition:
+
+Imagine every vector as an arrow pointing in some direction in space. Two arrows that point in almost the same direction are "similar" in meaning. Two arrows pointing in completely different directions are unrelated.
+
+Cosine similarity measures the **angle between two arrows**. A small angle = high similarity. A large angle = low similarity.
+
+```
+         ↑  "I love dogs"
+         |   \
+         |    \  ← small angle = very similar
+         |     ↘
+         |      "I adore puppies"
+         |
+         |
+         |                        → "The stock market crashed"
+         |____________________________________
+
+Small angle between "I love dogs" and "I adore puppies" → cosine similarity close to 1.0
+Large angle between "I love dogs" and "The stock market crashed" → cosine similarity close to 0.0
+```
+
+The score goes from **0 to 1**:
+
+- `1.0` = identical meaning
+- `0.5` = somewhat related
+- `0.0` = completely unrelated
+
+So when you search, you're not matching keywords — you're finding the chunks whose arrows point in the most similar direction to your question's arrow. That's why "backpropagation" and "how neural networks learn" can match each other, even though they don't share a single word.
+
+---
+
+## Why a regular database can't do this fast enough
+
+Imagine you have 100,000 chunks stored. A regular database like SQL would need to compare your question's vector against every single one of those 100,000 chunks, one by one, to find the closest match.
+
+This is called an **O(n)** operation — the time it takes grows linearly with the number of items. 100,000 chunks? 100,000 comparisons. 10 million chunks? 10 million comparisons. With vectors that are 768 numbers long, that's a massive amount of math for every single question.
+
+```
+Regular Search (O(n)) — checks every single item:
+
+Question vector ──┬──► Compare with chunk #1 ... score: 0.21
+                  ├──► Compare with chunk #2 ... score: 0.67
+                  ├──► Compare with chunk #3 ... score: 0.12
+                  ├──► Compare with chunk #4 ... score: 0.89  ← best so far
+                  ├──► Compare with chunk #5 ... score: 0.34
+                  ├──► ...
+                  └──► Compare with chunk #100,000 ... score: 0.11
+
+Total: 100,000 comparisons every time someone asks a question. Way too slow.
+```
+
+SQL and traditional databases were never designed for this kind of math. They're built for exact matches ("find rows where name = Alice"), not for "find something approximately similar to this 768-dimensional arrow."
+
+---
+
+## How Vector Databases solve the speed problem — ANN Algorithms
+
+Vector databases don't do an exhaustive comparison against every chunk. Instead, they use clever shortcut algorithms called **Approximate Nearest Neighbor (ANN)** algorithms. The word "approximate" is key — they sacrifice a tiny bit of accuracy to gain massive speed.
+
+Think of it like this: if you're looking for a coffee shop in a new city, you don't check every building in the city one by one. You look at your neighbourhood first — because coffee shops near you are far more likely to be relevant than ones on the other side of town. ANN does the same thing with vectors.
+
+There are three main approaches:
+
+---
+
+### HNSW — Hierarchical Navigable Small World
+
+Think of this like a **multi-floor building**. The top floor has a rough map of all the neighbourhoods in the city. The bottom floor has every single house.
+
+When searching, you start at the top floor, quickly navigate to the right neighbourhood, then descend to lower floors to find the exact closest match.
+
+```
+HNSW Structure (multi-layer graph):
+
+Layer 2 (sparse overview):     A ──────────────────── E
+                                         |
+Layer 1 (medium detail):       A ──── C ──── E
+                                |          |
+Layer 0 (all chunks):          A ─ B ─ C ─ D ─ E ─ F ─ G
+
+Search process:
+  → Start at Layer 2, jump to the rough area
+  → Drop to Layer 1, narrow it down
+  → Drop to Layer 0, find the exact best matches
+  → Done in a few dozen comparisons instead of thousands
+```
+
+FAISS uses HNSW. This is why FAISS can search millions of vectors in milliseconds.
+
+---
+
+### IVF — Inverted File Index
+
+Think of this like a **library organised into sections**. Instead of searching every shelf, you first figure out which section your topic belongs to, then only search that section.
+
+IVF divides all your chunk vectors into clusters during setup. Each cluster has a central point called a **centroid**. When a question comes in:
+
+1. Find the centroids closest to the question vector (just a few comparisons)
+2. Search only the chunks inside those matching clusters
+3. Return the best results
+
+```
+IVF — Cluster-based search:
+
+During setup:
+  All 100,000 chunks → grouped into 256 clusters
+  Each cluster gets a centroid (average center point)
+
+During search:
+  Question vector
+       ↓
+  Compare with 256 centroids only (fast!)
+       ↓
+  Find top 3 matching clusters
+       ↓
+  Only search chunks inside those 3 clusters (~1,200 chunks)
+       ↓
+  Return top results
+
+Instead of 100,000 comparisons → only ~1,200. 80x faster.
+```
+
+---
+
+### PQ — Product Quantization
+
+This one is about **compressing the vectors themselves** so comparisons are cheaper.
+
+Each vector is 768 numbers long. PQ splits it into smaller sub-vectors and replaces each sub-section with a shortcode from a pre-built lookup table. Now instead of comparing 768 numbers, you're comparing a handful of shortcodes — much faster arithmetic.
+
+```
+Original vector (768 numbers):
+[0.21, -0.45, 0.83, 0.12, ... 768 numbers total]
+
+After PQ compression (8 shortcodes):
+[code_14, code_7, code_31, code_2, code_19, code_5, code_28, code_11]
+
+Comparison is now 8 integer lookups instead of 768 floating-point multiplications.
+```
+
+PQ is often combined with IVF — this combination (IVF + PQ) is what powers large-scale production vector search at companies like Meta and Spotify.
+
+---
+
+### Speed comparison at a glance
+
+```
+Method              How it works                        Speed vs accuracy
+──────────────────────────────────────────────────────────────────────────
+Brute force (O(n))  Compare everything                  Exact, but very slow
+HNSW                Multi-layer graph navigation        Very fast, ~99% accurate
+IVF                 Search only nearest clusters        Fast, ~95% accurate
+PQ                  Compressed vector comparisons       Fastest, minor accuracy loss
+IVF + PQ (combined) Cluster search + compression        Best trade-off at scale
+```
+
+For learning and small projects (a few thousand chunks), brute force is totally fine. For production apps with millions of chunks, you'd use HNSW or IVF+PQ.
+
+---
+
+## Normal Database vs Vector Database — side by side
+
+It helps to see exactly how these two are different:
+
+```
+                    Normal Database (SQL)         Vector Database
+──────────────────────────────────────────────────────────────────────
+What it stores      Text, numbers, dates          Vectors (lists of numbers)
+How it searches     Exact match (name = "Alice")  Similarity match (nearest vectors)
+Best question       "Find all orders from May"    "Find chunks about neural networks"
+Can it understand   No — keyword only             Yes — meaning-based matching
+  meaning?
+Speed trick         Index on specific columns     ANN algorithms (HNSW, IVF, PQ)
+Example tools       MySQL, PostgreSQL, SQLite      FAISS, Chroma, Annoy, Pinecone
+```
+
+You can think of it this way: a normal database finds things by their **label**. A vector database finds things by their **meaning**.
+
+---
+
+## Types of Vector Stores — which one to use
+
+The three most commonly used vector stores in the LangChain and LlamaIndex world are:
+
+### FAISS (by Meta)
+
+- Runs **entirely on your machine** — no server, no internet needed
+- Blazing fast — built in C++ with Python wrappers
+- Supports both brute-force and HNSW indexing
+- Save to disk with `save_local()`, reload with `load_local()`
+- Best for: learning, local prototypes, offline use
+
+```python
+from langchain_community.vectorstores import FAISS
+
+vectorstore = FAISS.from_documents(chunks, embedding=embedding_model)
+vectorstore.save_local("my_faiss_index")
+```
+
+### Chroma
+
+- Open source, easy to set up, can run locally or as a persistent server
+- Very popular in the LangChain community
+- Automatically persists data to a folder — just point it at a directory
+- Best for: projects where you want persistence without much setup
+
+```python
+from langchain_community.vectorstores import Chroma
+
+vectorstore = Chroma.from_documents(
+    chunks,
+    embedding=embedding_model,
+    persist_directory="./chroma_db"
+)
+```
+
+### Annoy (by Spotify)
+
+- Stands for "Approximate Nearest Neighbors Oh Yeah" (yes, really)
+- Uses tree-based indexing — builds multiple random projection trees
+- Read-only after indexing (you can't add new items after building)
+- Best for: music recommendation-style use cases, read-heavy workloads
+
+```
+Quick pick guide:
+
+Just learning / building locally?       → FAISS
+Need persistence with an easy setup?    → Chroma
+Read-heavy, won't add new data later?   → Annoy
+Production at large scale?              → Pinecone or Weaviate (managed cloud services)
+```
+
+All three are free, open source, and work directly with LangChain and LlamaIndex out of the box. For everything in this repo, FAISS and Chroma are the go-to choices.
