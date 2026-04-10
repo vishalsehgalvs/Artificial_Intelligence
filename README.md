@@ -34,6 +34,8 @@ Artificial_Intelligence/
 │   ├── load_and_split_text.py         ← same but with plain text files
 │   ├── split_text_into_chunks.py      ← experiment with different chunking strategies
 │   ├── load_webpage.py                ← load content directly from a website URL
+│   ├── vector_store_db.py             ← store chunks in Chroma vector DB and run similarity search
+│   ├── Generative_AI_part2_notes.pdf  ← PDF notes for Part 2
 │   └── readme.md                      ← full notes for Part 2
 │
 ├── 03_Tools_Agents_and_APIs/          ← Part 3: tools, agents, tool calling (upcoming)
@@ -42,7 +44,9 @@ Artificial_Intelligence/
 ├── README.md                          ← this file
 ├── requirements.txt                   ← all Python packages needed
 ├── .env.example                       ← template for your API keys
-└── .gitignore                         ← keeps secrets and cache out of git
+├── .gitignore                         ← keeps secrets and cache out of git
+├── AI and ML with python.pdf          ← reference book for ML and Python foundations
+└── Generative-AI-and-LLMs-for-Dummies.pdf  ← beginner-friendly reference for Generative AI concepts
 ```
 
 ---
