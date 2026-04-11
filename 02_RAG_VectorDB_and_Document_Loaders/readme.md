@@ -4,6 +4,8 @@ Part 1 taught you how to talk to an AI model — how to send it a message, shape
 
 Here you'll learn how to connect an AI model to your _own_ data — documents, PDFs, notes — so it can answer questions based on content it was never trained on. The technology behind this is called **RAG**, and it's one of the most useful things you can build with AI today.
 
+> **RAG** stands for **Retrieval-Augmented Generation** — retrieve relevant content first, then generate an answer based on it.
+
 ---
 
 ## What Document Loaders are and how they load PDFs into LangChain
