@@ -35,6 +35,10 @@ Artificial_Intelligence/
 │   ├── split_text_into_chunks.py      ← experiment with different chunking strategies
 │   ├── load_webpage.py                ← load content directly from a website URL
 │   ├── vector_store_db.py             ← store chunks in Chroma vector DB and run similarity search
+│   ├── create_database.py             ← build and populate the vector database from documents
+│   ├── mmr_retrievers.py              ← retrieval using Max Marginal Relevance (diverse results)
+│   ├── multiquery_retrievers.py       ← retrieval by rewriting the question multiple ways
+│   ├── arixv_retrievers.py            ← retrieval from the ArXiv research papers API
 │   ├── Generative_AI_part2_notes.pdf  ← PDF notes for Part 2
 │   └── readme.md                      ← full notes for Part 2
 │

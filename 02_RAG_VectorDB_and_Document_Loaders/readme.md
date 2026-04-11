@@ -514,3 +514,245 @@ Production at large scale?              → Pinecone or Weaviate (managed cloud 
 ```
 
 All three are free, open source, and work directly with LangChain and LlamaIndex out of the box. For everything in this repo, FAISS and Chroma are the go-to choices.
+
+---
+
+## What Retrievers are and how they fetch the right information
+
+Imagine you've loaded your PDF, split it into 200 chunks, and stored all of them in a vector database. Now a user types a question. How does the system figure out which of those 200 chunks to actually send to the AI?
+
+That's exactly what a **Retriever** does. It takes the user's question, searches the vector database, and hands back only the most relevant chunks — so the AI doesn't have to read all 200 pieces every time.
+
+```
+User question: "How does gradient descent work?"
+         │
+         ▼
+    Retriever
+         │  searches vector database
+         ▼
+  Returns top 4 relevant chunks
+         │
+         ▼
+  These chunks + question → sent to the LLM
+         │
+         ▼
+    Answer generated
+```
+
+Think of the retriever like a librarian. You ask the librarian a question, and instead of handing you the entire library, they walk back and return just the three or four books most relevant to what you asked.
+
+---
+
+## Two ways to categorise Retrievers
+
+### By data source — where does the information come from?
+
+Not all retrievers pull from a local vector database. Some connect to external sources:
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Retriever Types                   │
+│                  (by data source)                   │
+├─────────────────────┬───────────────────────────────┤
+│  Local Vector Store │  External / API-based         │
+│                     │                               │
+│  FAISS, Chroma,     │  Wikipedia, PubMed,           │
+│  Pinecone etc.      │  ArXiv, Google, SQL DB etc.   │
+│                     │                               │
+│  Your own documents │  Live internet or             │
+│  stored on disk     │  third-party databases        │
+└─────────────────────┴───────────────────────────────┘
+```
+
+For everything in this repo, we use **local vector store retrievers** — our own documents stored in FAISS or Chroma.
+
+### By search strategy — how does it decide what's relevant?
+
+This is where it gets interesting. The same vector database can be searched in very different ways depending on what strategy the retriever uses. There are three main strategies used in RAG systems.
+
+---
+
+## The three core search strategies
+
+### 1. Similarity Search — the default
+
+This is the most straightforward approach. You convert the question to a vector, compare it against all stored chunk vectors, and return the top-K closest ones.
+
+```
+User question vector: [0.21, -0.45, 0.83, ...]
+
+Compare with every chunk in the database
+using a similarity metric (e.g., cosine similarity)
+
+Results ranked by score:
+  Chunk #47  →  score: 0.94  ✅ (returned)
+  Chunk #12  →  score: 0.91  ✅ (returned)
+  Chunk #88  →  score: 0.87  ✅ (returned)
+  Chunk #31  →  score: 0.85  ✅ (returned)
+  Chunk #55  →  score: 0.61  ✗ (not returned)
+  ...
+
+Top K=4 chunks returned to the LLM
+```
+
+**How similarity is measured — three metrics:**
+
+| Metric                             | What it measures                                                          | Best for                          |
+| ---------------------------------- | ------------------------------------------------------------------------- | --------------------------------- |
+| **Cosine Similarity**              | Angle between two vectors — ignores magnitude, only cares about direction | General text search — most common |
+| **Dot Product**                    | Angle + magnitude combined — rewards both direction and strength          | When vectors are normalised       |
+| **Euclidean / Manhattan Distance** | Physical distance between two points in space                             | When scale of the numbers matters |
+
+For text search in RAG, **cosine similarity** is almost always the right choice. Two sentences that mean the same thing point in the same direction, regardless of how long or short they are.
+
+**Pros:**
+
+- Simple and fast
+- Works well in the vast majority of use cases
+- Easy to understand and debug
+
+**Cons:**
+
+- Can return chunks that are all very similar to each other — you might get 4 chunks that all say basically the same thing
+- Purely mathematical — doesn't consider diversity of information
+
+```python
+retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+results = retriever.invoke("What is gradient descent?")
+```
+
+---
+
+### 2. MMR — Max Marginal Relevance
+
+MMR solves the biggest weakness of plain similarity search: **redundancy**.
+
+Imagine asking "explain neural networks." Similarity search might return 4 chunks that all cover the same introductory paragraph about neurons — because they're all very close to the question vector. You get four versions of the same idea. That's not useful.
+
+MMR adds a second requirement: each new chunk must be **relevant to the question AND different from the chunks already selected**.
+
+```
+MMR Selection Process:
+
+Step 1 → Find chunk most similar to the question:
+         Chunk #47 (score: 0.94) ✅ selected
+
+Step 2 → Find next chunk that is relevant to question
+         BUT also different from Chunk #47:
+         Chunk #12 is similar to question (0.91)
+         but too similar to #47 → skip
+         Chunk #88 is relevant (0.87)
+         and covers a different angle → ✅ selected
+
+Step 3 → Repeat: next chunk must be relevant
+         AND different from both #47 and #88
+         → ✅ Chunk #31 selected
+
+Result: 4 chunks that are all relevant but cover
+        different aspects of the topic
+```
+
+**Pros:**
+
+- Much better coverage — the AI gets a broader view of the topic
+- Avoids redundant, repetitive context
+- Especially useful when your document has a lot of repeated content
+
+**Cons:**
+
+- Slightly slower than plain similarity search (extra diversity calculation)
+- The `fetch_k` parameter matters — you fetch more candidates first, then filter down
+
+```python
+retriever = vectorstore.as_retriever(
+    search_type="mmr",
+    search_kwargs={"k": 4, "fetch_k": 20}
+    # fetch 20 candidates first, then pick the 4 most diverse+relevant
+)
+```
+
+---
+
+### 3. MultiQuery Retriever — when one question isn't enough
+
+Sometimes the way a user phrases a question doesn't perfectly match the wording used in your documents. Plain similarity search might miss relevant chunks just because of different vocabulary.
+
+MultiQuery fixes this by **automatically rewriting your question in multiple different ways** and running a separate search for each version. Then it combines all the results.
+
+```
+Original question: "How do machines learn?"
+         │
+         ▼
+  LLM rewrites it into 3 versions:
+  ┌─────────────────────────────────────────────┐
+  │  Version 1: "What is the training process   │
+  │              in machine learning?"          │
+  │  Version 2: "How do neural networks         │
+  │              update their weights?"         │
+  │  Version 3: "Explain gradient descent       │
+  │              and backpropagation"           │
+  └─────────────────────────────────────────────┘
+         │
+         ▼
+  Run similarity search for each version separately
+         │
+         ▼
+  Combine all results (remove duplicates)
+         │
+         ▼
+  Return the richest, most complete set of chunks
+```
+
+**Pros:**
+
+- Catches relevant content that might be missed due to word choice
+- Great when users ask short or vague questions
+- Significantly improves recall (finding chunks that ARE relevant but were missed)
+
+**Cons:**
+
+- Slower — runs multiple searches and makes extra LLM calls to rewrite the question
+- Higher cost — each rewritten query uses API tokens
+- Can sometimes add noise if the rewrites go in a wrong direction
+
+```python
+from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+
+retriever = MultiQueryRetriever.from_llm(
+    retriever=vectorstore.as_retriever(),
+    llm=llm
+)
+```
+
+---
+
+## Side-by-side comparison of all three strategies
+
+```
+┌─────────────────┬──────────────────┬──────────────────┬──────────────────┐
+│                 │ Similarity Search│      MMR         │  MultiQuery      │
+├─────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ How it works    │ Find closest     │ Find closest     │ Rewrite question │
+│                 │ vectors to query │ + most diverse   │ multiple ways,   │
+│                 │                  │ chunks           │ combine results  │
+├─────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ Speed           │ Fastest          │ Slightly slower  │ Slowest          │
+├─────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ Best when       │ General use,     │ Document has     │ Users ask vague  │
+│                 │ clear questions  │ repeated content │ or short queries │
+├─────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ Risk            │ Redundant chunks │ Slightly less    │ Extra cost +     │
+│                 │ if doc repeats   │ precise          │ slower           │
+├─────────────────┼──────────────────┼──────────────────┼──────────────────┤
+│ Extra LLM call? │ No               │ No               │ Yes              │
+└─────────────────┴──────────────────┴──────────────────┴──────────────────┘
+```
+
+**When to use which:**
+
+- **Just getting started or general RAG?** → Similarity Search with `k=4`
+- **Your document is long with repetitive sections?** → MMR
+- **Users ask short, casual, or vague questions?** → MultiQuery
