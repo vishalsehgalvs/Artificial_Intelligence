@@ -14,8 +14,8 @@ The fundamentals. What AI models are, how to call them, how to write good prompt
 **Part 2 — RAG, Vector Databases & Document Loaders**
 How to connect AI to your own data. Documents, PDFs, embeddings, vector databases, and the full RAG pipeline so the AI can answer questions based on your specific material.
 
-**Part 3 — Tools, AI Agents, Tool Calling, APIs & LangChain** _(upcoming)_
-How to give AI models the ability to take action — calling APIs, using tools, and building agents that can plan and execute multi-step tasks on their own.
+**Part 3 — Tools, AI Agents, Tool Calling, APIs & LangChain** _(in progress)_
+How to give AI models the ability to take action — calling APIs, using tools, and building agents that can plan and execute multi-step tasks on their own. The first mini project (JobSage) is already here.
 
 ---
 
@@ -36,14 +36,16 @@ Artificial_Intelligence/
 │   ├── load_webpage.py                ← load content directly from a website URL
 │   ├── vector_store_db.py             ← store chunks in Chroma vector DB and run similarity search
 │   ├── create_database.py             ← build and populate the vector database from documents
+│   ├── rag_application.py             ← terminal version of the full RAG app — ask questions from the saved DB
+│   ├── rag_app.py                     ← browser version of the RAG app — upload a PDF and chat with it
 │   ├── mmr_retrievers.py              ← retrieval using Max Marginal Relevance (diverse results)
 │   ├── multiquery_retrievers.py       ← retrieval by rewriting the question multiple ways
 │   ├── arixv_retrievers.py            ← retrieval from the ArXiv research papers API
 │   ├── Generative_AI_part2_notes.pdf  ← PDF notes for Part 2
 │   └── readme.md                      ← full notes for Part 2
 │
-├── 03_Tools_Agents_and_APIs/          ← Part 3: tools, agents, tool calling (upcoming)
-│   └── JobSage/                       ← extract structured data from job postings
+├── 03_Tools_Agents_and_APIs/          ← Part 3: tools, agents, tool calling (in progress)
+│   └── JobSage/                       ← mini project: paste a job description, get clean structured data back
 │
 ├── README.md                          ← this file
 ├── requirements.txt                   ← all Python packages needed
