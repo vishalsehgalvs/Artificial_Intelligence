@@ -263,13 +263,19 @@ Fine-tuning means retraining the model on your data so it "remembers" it permane
 
 The code in this folder shows working examples of each part of this pipeline end to end:
 
-| File                        | What it does                                                                                      |
-| --------------------------- | ------------------------------------------------------------------------------------------------- |
-| `load_and_split_pdf.py`     | Loads a PDF using `PyPDFLoader` and splits it into chunks                                         |
-| `load_and_split_text.py`    | Same thing but for plain `.txt` files                                                             |
-| `split_text_into_chunks.py` | Experiments with chunk size and overlap to see how splitting behaves                              |
-| `load_webpage.py`           | Loads content from a live website URL instead of a file                                           |
-| `vector_store_db.py`        | Takes documents, converts them to embeddings, stores them in Chroma, and runs a similarity search |
+| File                        | What it does                                                                                                                                             |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `load_and_split_pdf.py`     | Loads a PDF using `PyPDFLoader` and splits it into chunks                                                                                                |
+| `load_and_split_text.py`    | Same thing but for plain `.txt` files                                                                                                                    |
+| `split_text_into_chunks.py` | Experiments with chunk size and overlap to see how splitting behaves                                                                                     |
+| `load_webpage.py`           | Loads content from a live website URL instead of a file                                                                                                  |
+| `vector_store_db.py`        | Takes documents, converts them to embeddings, stores them in Chroma, and runs a similarity search                                                        |
+| `create_database.py`        | One-time setup script — loads a PDF, splits it into chunks, and saves everything into a Chroma vector database on disk                                   |
+| `rag_application.py`        | Terminal version of a full RAG app — loads the saved database, takes your question, finds relevant chunks, and prints the AI's answer                    |
+| `rag_app.py`                | The same RAG app but with a browser interface — upload any PDF, build the vector database, and ask questions through a Streamlit UI                      |
+| `arixv_retrievers.py`       | Pulls real research papers from arXiv (the academic paper archive) and uses them as a knowledge source — no PDF needed                                   |
+| `mmr_retrievers.py`         | Side-by-side comparison of regular similarity search vs MMR — shows how MMR picks more varied results instead of returning the same idea four times      |
+| `multiquery_retrievers.py`  | Uses an LLM to rewrite your question in multiple ways, runs all of them, and combines the results — helps when one phrasing alone might miss good chunks |
 
 `Generative_AI_part2_notes.pdf` contains the handwritten and typed notes for this whole section — useful as a companion reference alongside the code.
 
