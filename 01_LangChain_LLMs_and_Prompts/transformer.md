@@ -30,14 +30,25 @@ That's the whole trick. It sounds too simple to be impressive — but when you d
 Here's everything we'll cover:
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1a4a7a', 'primaryTextColor': '#ffffff', 'lineColor': '#4A90D9'}}}%%
 flowchart TD
-    A[Word Embeddings\nTurning words into numbers] --> B[Contextual Embeddings\nNumbers that change based on meaning]
-    B --> C[Encoder\nReads the sentence and understands it]
-    C --> D[Tokenization + Positional Encoding\nBreaking input into pieces and marking order]
-    D --> E[Self-Attention\nWords paying attention to each other]
-    E --> F[Multi-Head Attention\nMultiple angles of attention at once]
-    F --> G[Feed Forward Network\nDeep processing of each word]
-    G --> H[Decoder\nGenerates the output word by word]
+    A(["🔢 Word Embeddings\nTurning words into numbers"]) --> B(["🔄 Contextual Embeddings\nNumbers that shift based on meaning"])
+    B --> C(["📍 Tokenization + Positional Encoding\nBreaking text into pieces and marking order"])
+    C --> D(["🎯 Self-Attention\nWords paying attention to each other"])
+    D --> E(["🔀 Multi-Head Attention\nMany angles of attention at once"])
+    E --> F(["🧠 Feed Forward Network\nDeep nonlinear processing"])
+    F --> G(["📖 Encoder\nReads and understands the sentence"])
+    F --> H(["✍️ Decoder\nGenerates the output word by word"])
+
+    classDef embeddings fill:#1a4a7a,stroke:#4A90D9,color:#ffffff,font-weight:bold
+    classDef attention  fill:#5a1a7a,stroke:#9B59B6,color:#ffffff,font-weight:bold
+    classDef processing fill:#1a5a2a,stroke:#27AE60,color:#ffffff,font-weight:bold
+    classDef model      fill:#7a3a10,stroke:#E67E22,color:#ffffff,font-weight:bold
+
+    class A,B,C embeddings
+    class D,E attention
+    class F processing
+    class G,H model
 ```
 
 ---
@@ -127,11 +138,20 @@ After reading "sweet Indian":
 Each surrounding word nudges the embedding in a different direction until it has a rich, accurate meaning for this specific use of the word in this specific sentence.
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart LR
-    A["dish (static)"] --> B[+sweetness]
-    B --> C[+indianness]
-    C --> D[+riceness]
-    D --> E["dish (contextual)\n= Biryani/Kheer territory"]
+    A(["🍽️ dish\n(static)"]) -->|+sweetness| B(["🍽️🍬 dish\n+sweet"])
+    B -->|+indianness| C(["🍽️🇮🇳 dish\n+indian"])
+    C -->|+riceness| D(["🍚 dish\n+rice"])
+    D --> E(["✨ dish  contextual\n≈ Biryani / Kheer"])
+
+    classDef static   fill:#3a3a5a,stroke:#7878aa,color:#ffffff
+    classDef enriched fill:#1a4a7a,stroke:#4A90D9,color:#ffffff
+    classDef final    fill:#1a6a3a,stroke:#27AE60,color:#ffffff,font-weight:bold
+
+    class A static
+    class B,C,D enriched
+    class E final
 ```
 
 This is what the Transformer architecture is built to do — generate **contextual embeddings**.
@@ -143,11 +163,24 @@ This is what the Transformer architecture is built to do — generate **contextu
 The Transformer has two main parts:
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart LR
-    Input["Input Sentence\n'I made a sweet dish'"] --> Encoder
-    Encoder["ENCODER\nReads and understands\nthe sentence"] --> ContextEmb["Contextual\nEmbeddings"]
+    Input(["📝 Input Sentence\n'I made a sweet dish'"]) --> Encoder
+    Encoder(["📖 ENCODER\nReads and understands\nthe sentence"]) --> ContextEmb(["🔢 Contextual\nEmbeddings"])
     ContextEmb --> Decoder
-    Decoder["DECODER\nPredicts the\nnext word"] --> Output["Output Word\n'kheer'"]
+    Decoder(["✍️ DECODER\nPredicts the\nnext word"]) --> Output(["💡 Output Word\n'kheer'"])
+
+    classDef input   fill:#2c3e50,stroke:#95a5a6,color:#ffffff
+    classDef encoder fill:#1a4a7a,stroke:#4A90D9,color:#ffffff,font-weight:bold
+    classDef middle  fill:#4a2a6a,stroke:#9B59B6,color:#ffffff
+    classDef decoder fill:#7a3a10,stroke:#E67E22,color:#ffffff,font-weight:bold
+    classDef out     fill:#1a5a2a,stroke:#27AE60,color:#ffffff,font-weight:bold
+
+    class Input input
+    class Encoder encoder
+    class ContextEmb middle
+    class Decoder decoder
+    class Output out
 ```
 
 | Part        | Job                                              | Used by              |
@@ -286,20 +319,35 @@ Think of it like visiting a library:
 4. Words with high scores contribute more of their **Value** to the final embedding
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart TD
-    E7[Static embedding of 'dish'] --> WQ[× WQ matrix] --> Q7[Query Vector Q7]
-    E1[Static embedding of 'sweet'] --> WK[× WK matrix] --> K1[Key Vector K1]
-    E2[Static embedding of 'Indian'] --> WK2[× WK matrix] --> K2[Key Vector K2]
+    E7(["📦 Embedding of  'dish'"]) --> WQ(["× WQ"]) --> Q7(["🔍 Query Q7"])
+    E1(["📦 Embedding of 'sweet'"]) --> WK(["× WK"])  --> K1(["🔑 Key K1"])
+    E2(["📦 Embedding of 'Indian'"])  --> WK2(["× WK"]) --> K2(["🔑 Key K2"])
 
-    Q7 -->|dot product| Score1[Attention Score\nQ7 · K1 = 36%]
-    Q7 -->|dot product| Score2[Attention Score\nQ7 · K2 = 14%]
+    Q7 -->|"dot product"| Score1(["📊 Score: 36%"])
+    Q7 -->|"dot product"| Score2(["📊 Score: 14%"])
 
-    Score1 --> Softmax[Softmax\nconvert to probabilities]
-    Score2 --> Softmax
+    Score1 --> SM(["🎯 Softmax\nconvert to probabilities"])
+    Score2 --> SM
 
-    Softmax -->|36% of V_sweet| FinalEmb
-    Softmax -->|14% of V_Indian| FinalEmb
-    FinalEmb[Contextual Embedding for 'dish']
+    SM -->|"36% × V_sweet"| FE
+    SM -->|"14% × V_Indian"| FE
+    FE(["✨ Contextual Embedding\nfor 'dish'"])
+
+    classDef emb    fill:#1a4a7a,stroke:#4A90D9,color:#ffffff
+    classDef mat    fill:#4a2a6a,stroke:#9B59B6,color:#ffffff
+    classDef query  fill:#1a5a7a,stroke:#16A085,color:#ffffff,font-weight:bold
+    classDef key    fill:#5a3a1a,stroke:#E67E22,color:#ffffff,font-weight:bold
+    classDef score  fill:#4a1a4a,stroke:#8E44AD,color:#ffffff
+    classDef result fill:#1a6a2a,stroke:#27AE60,color:#ffffff,font-weight:bold
+
+    class E7,E1,E2 emb
+    class WQ,WK,WK2 mat
+    class Q7 query
+    class K1,K2 key
+    class Score1,Score2,SM score
+    class FE result
 ```
 
 ### The Three Special Matrices: WQ, WK, WV
@@ -337,20 +385,33 @@ The division by √dk is just a stability trick — without it, the dot products
 One attention head focuses on one type of relationship. But language has many different types of relationships simultaneously.
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart TD
-    Input["Sentence Embedding"] --> H1["Head 1\nAdjectives/modifiers\n(sweet → dish)"]
-    Input --> H2["Head 2\nPronoun reference\n(he/she → person)"]
-    Input --> H3["Head 3\nSubject-verb\n(I → made)"]
-    Input --> H4["Head 4\nCultural context\n(Dosa, Idly → Indian)"]
-    Input --> Hdots["Head 5...96\n(other relationships)"]
+    Input(["📝 Sentence Embedding"])
 
-    H1 --> Concat["Concatenate & combine\nall contextual outputs"]
+    Input --> H1(["🎯 Head 1\nAdjectives / modifiers\nsweet → dish"])
+    Input --> H2(["💬 Head 2\nPronoun reference\nhe / she → person"])
+    Input --> H3(["🔗 Head 3\nSubject-verb\nI → made"])
+    Input --> H4(["🌍 Head 4\nCultural context\nDosa, Idly → Indian"])
+    Input --> Hdots(["⚙️ Head 5 … 96\nother relationships"])
+
+    H1 --> Concat(["🔀 Concatenate + combine\nall contextual outputs"])
     H2 --> Concat
     H3 --> Concat
     H4 --> Concat
     Hdots --> Concat
 
-    Concat --> FinalEmb["Final Enriched Embedding\nfor each token"]
+    Concat --> FinalEmb(["✨ Final Enriched Embedding\nfor each token"])
+
+    classDef input   fill:#1a4a7a,stroke:#4A90D9,color:#ffffff,font-weight:bold
+    classDef head    fill:#5a1a5a,stroke:#9B59B6,color:#ffffff
+    classDef combine fill:#1a3a5a,stroke:#2980B9,color:#ffffff
+    classDef output  fill:#1a5a2a,stroke:#27AE60,color:#ffffff,font-weight:bold
+
+    class Input input
+    class H1,H2,H3,H4,Hdots head
+    class Concat combine
+    class FinalEmb output
 ```
 
 Each head runs its own independent Q, K, V computation and produces its own version of the contextual embedding. All of them are combined at the end.
@@ -393,21 +454,40 @@ Think of attention as understanding _relationships_ and the feed forward network
 One complete pass through the encoder looks like this:
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart TD
-    A[Input Sentence] --> B[Tokenize]
-    B --> C[Token IDs]
-    C --> D[Static Embedding Lookup]
-    D --> E[+ Positional Encoding]
-    E --> F[Layer Normalization]
-    F --> G[Multi-Head Self-Attention\n96 heads × Q,K,V computation]
-    G --> H[+ Residual Connection\nadd original embedding back in]
-    H --> I[Layer Normalization]
-    I --> J[Feed Forward Network\nnon-linear deep processing]
-    J --> K[+ Residual Connection]
-    K --> L["Final Contextual Embedding\n(one per token)"]
-    L --> M{More layers?}
-    M -->|Yes — repeat Nx times| F
-    M -->|No — done| N[Output to Decoder or Classifier]
+    A(["📝 Input Sentence"])           --> B(["🔤 Tokenize"])
+    B                                  --> C(["🔢 Token IDs"])
+    C                                  --> D(["📖 Static Embedding Lookup"])
+    D                                  --> E(["📍 + Positional Encoding"])
+    E                                  --> F(["⚖️ Layer Normalization"])
+    F                                  --> G(["🎯 Multi-Head Self-Attention\n96 heads × Q, K, V"])
+    G                                  --> H(["➕ Residual Connection"])
+    H                                  --> I(["⚖️ Layer Normalization"])
+    I                                  --> J(["🧠 Feed Forward Network\nnon-linear deep processing"])
+    J                                  --> K(["➕ Residual Connection"])
+    K                                  --> L(["✨ Final Contextual Embedding\none per token"])
+    L                                  --> M{"More\nlayers?"}  
+    M -->|"Yes — repeat Nx times"| F
+    M -->|"No — done"|              N(["📤 Output to Decoder\nor Classifier"])
+
+    classDef input    fill:#2c3e50,stroke:#95a5a6,color:#ffffff
+    classDef embed    fill:#1a4a7a,stroke:#4A90D9,color:#ffffff
+    classDef norm     fill:#4a4a1a,stroke:#F39C12,color:#ffffff
+    classDef attn     fill:#5a1a5a,stroke:#9B59B6,color:#ffffff,font-weight:bold
+    classDef residual fill:#2a2a4a,stroke:#5D6D7E,color:#cccccc
+    classDef ffn      fill:#1a5a2a,stroke:#27AE60,color:#ffffff,font-weight:bold
+    classDef output   fill:#1a5a3a,stroke:#1ABC9C,color:#ffffff,font-weight:bold
+    classDef decision fill:#6a2a1a,stroke:#E74C3C,color:#ffffff
+
+    class A input
+    class B,C,D,E embed
+    class F,I norm
+    class G attn
+    class H,K residual
+    class J ffn
+    class L,N output
+    class M decision
 ```
 
 **Residual connections** (the "add original back in" steps) help gradients flow smoothly during training — a technique borrowed from ResNet image models.
@@ -447,15 +527,25 @@ Final output: "Maine kheer banai"
 The decoder has one extra type of attention called **cross-attention**:
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart TD
-    EncOut["Encoder Output\n(contextual embeddings\nof English sentence)"] --> KV["Keys (K) and Values (V)\nfrom encoder"]
+    EncOut(["📖 Encoder Output\ncontextual embeddings of\nEnglish sentence"]) --> KV(["🔑 Keys K  +  Values V\nfrom encoder"])
+    DecInput(["✍️ Decoder partial output\nHindi words so far"])   --> Q(["🔍 Query Q\nfrom decoder"])
 
-    DecInput["Decoder's partial output\n(Hindi words generated so far)"] --> Q["Query (Q)\nfrom decoder"]
+    Q   --> CrossAttn(["🔀 Cross-Attention\nDecoder asks: which part\nof the English input\nshould I focus on now?"])
+    KV  --> CrossAttn
 
-    Q --> CrossAttn["Cross-Attention\nDecoder asks: which part\nof the English input\nshould I focus on now?"]
-    KV --> CrossAttn
+    CrossAttn --> NextWord(["💡 Predict next Hindi word"])
 
-    CrossAttn --> NextWord["Predict next Hindi word"]
+    classDef encoder fill:#1a4a7a,stroke:#4A90D9,color:#ffffff,font-weight:bold
+    classDef decoder fill:#7a3a10,stroke:#E67E22,color:#ffffff,font-weight:bold
+    classDef attn    fill:#5a1a5a,stroke:#9B59B6,color:#ffffff
+    classDef output  fill:#1a5a2a,stroke:#27AE60,color:#ffffff,font-weight:bold
+
+    class EncOut,KV encoder
+    class DecInput,Q decoder
+    class CrossAttn attn
+    class NextWord output
 ```
 
 In regular self-attention: Q, K, and V all come from the **same sentence**.
@@ -536,29 +626,49 @@ All just from predicting the next word, over and over.
 ## The Big Picture — Everything Together
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart TD
-    A["Your sentence or question"] --> B["Tokenize\nbreak into tokens + get IDs"]
-    B --> C["Static Embedding\nlook up vector for each token"]
-    C --> D["+ Positional Encoding\nadd position awareness"]
-    D --> E["Transformer Block × N layers"]
+    A(["🗣️ Your sentence or question"])    --> B(["🔤 Tokenize\nbreak into tokens + IDs"])
+    B                                      --> C(["📖 Static Embedding\nlook up vector for each token"])
+    C                                      --> D(["📍 + Positional Encoding\nadd position awareness"])
+    D                                      --> E(["⚡ Transformer Block × N layers"])
 
-    subgraph Block["One Transformer Block"]
+    subgraph Block["🧩 One Transformer Block"]
         direction TB
-        E1["Layer Norm"] --> E2["Multi-Head Self-Attention\n96 heads × QKV"]
-        E2 --> E3["+ Residual"]
-        E3 --> E4["Layer Norm"]
-        E4 --> E5["Feed Forward Network"]
-        E5 --> E6["+ Residual"]
+        E1(["⚖️ Layer Norm"])          --> E2(["🎯 Multi-Head Self-Attention\n96 heads × QKV"])
+        E2                             --> E3(["➕ Residual"])
+        E3                             --> E4(["⚖️ Layer Norm"])
+        E4                             --> E5(["🧠 Feed Forward Network"])
+        E5                             --> E6(["➕ Residual"])
     end
 
-    D --> Block
-    Block --> F["Final Contextual Embeddings\none rich vector per token"]
+    D     --> Block
+    Block --> F(["✨ Final Contextual Embeddings\none rich vector per token"])
+    F     --> G{"What are\nwe doing?"}
 
-    F --> G{What are\nwe doing?}
-    G -->|"BERT — Classification"| H["Add classifier head → answer"]
-    G -->|"GPT — Generation"| I["Feed to decoder → predict next word"]
-    I --> J["Append predicted word → repeat"]
-    J --> K["Complete response ✅"]
+    G -->|"BERT — Classification"| H(["📋 Add classifier → answer"])
+    G -->|"GPT — Generation"|      I(["🔮 Predict next word"])
+    I --> J(["📝 Append word → repeat"])
+    J --> K(["✅ Complete response"])
+
+    classDef input    fill:#2c3e50,stroke:#95a5a6,color:#ffffff
+    classDef embed    fill:#1a4a7a,stroke:#4A90D9,color:#ffffff
+    classDef norm     fill:#4a4a1a,stroke:#F39C12,color:#ffffff
+    classDef attn     fill:#5a1a5a,stroke:#9B59B6,color:#ffffff,font-weight:bold
+    classDef residual fill:#2a2a4a,stroke:#5D6D7E,color:#cccccc
+    classDef ffn      fill:#1a5a2a,stroke:#27AE60,color:#ffffff
+    classDef final    fill:#1a3a6a,stroke:#2471A3,color:#ffffff,font-weight:bold
+    classDef decision fill:#6a3a1a,stroke:#E67E22,color:#ffffff
+    classDef output   fill:#1a5a3a,stroke:#1ABC9C,color:#ffffff,font-weight:bold
+
+    class A,B,C,D,E input
+    class E1,E4 norm
+    class E2 attn
+    class E3,E6 residual
+    class E5 ffn
+    class F final
+    class G decision
+    class H,I,J,K output
 ```
 
 ---
@@ -598,7 +708,7 @@ This tool uses **GPT-2 (small)** — 124 million parameters, 12 transformer bloc
 
 ![Embedding layer](https://poloclub.github.io/transformer-explainer/article_assets/embedding.png)
 
-*Figure: How the input sentence turns into numbers — tokenize → token embedding → positional encoding → final embedding.*
+_Figure: How the input sentence turns into numbers — tokenize → token embedding → positional encoding → final embedding._
 
 When you type `"Data visualization empowers users to"`:
 
@@ -614,15 +724,15 @@ When you type `"Data visualization empowers users to"`:
 
 ![QKV computation](https://poloclub.github.io/transformer-explainer/article_assets/QKV.png)
 
-*Figure: Each token's 768-number vector gets multiplied by three different weight matrices to produce Q, K, and V.*
+_Figure: Each token's 768-number vector gets multiplied by three different weight matrices to produce Q, K, and V._
 
 Think of it like a **web search analogy**:
 
-| Matrix | Web Search Equivalent | What it means in the model |
-|--------|----------------------|---------------------------|
-| **Q (Query)** | The text you type in the search bar | "What am I looking for?" |
-| **K (Key)** | The title/description of each search result | "What does each word advertise about itself?" |
-| **V (Value)** | The actual content of the web page | "What information does each word actually contribute?" |
+| Matrix        | Web Search Equivalent                       | What it means in the model                             |
+| ------------- | ------------------------------------------- | ------------------------------------------------------ |
+| **Q (Query)** | The text you type in the search bar         | "What am I looking for?"                               |
+| **K (Key)**   | The title/description of each search result | "What does each word advertise about itself?"          |
+| **V (Value)** | The actual content of the web page          | "What information does each word actually contribute?" |
 
 Each token produces its own Q, K, and V independently, all in parallel.
 
@@ -632,7 +742,7 @@ Each token produces its own Q, K, and V independently, all in parallel.
 
 ![Masked self-attention](https://poloclub.github.io/transformer-explainer/article_assets/attention.png)
 
-*Figure: The attention matrix — each row shows how much one token attends to all previous tokens. The upper triangle is masked (blocked) so GPT can't peek at future words.*
+_Figure: The attention matrix — each row shows how much one token attends to all previous tokens. The upper triangle is masked (blocked) so GPT can't peek at future words._
 
 This is the step that actually changes every token's meaning based on context. Here's what happens:
 
@@ -666,7 +776,7 @@ GPT-2 has **12 attention heads**, each producing its own version of this. All 12
 
 ![MLP layer](https://poloclub.github.io/transformer-explainer/article_assets/mlp.png)
 
-*Figure: The MLP expands each token's 768-number vector up to 3072, applies GELU, then compresses back to 768.*
+_Figure: The MLP expands each token's 768-number vector up to 3072, applies GELU, then compresses back to 768._
 
 After attention, each token goes through a small neural network independently:
 
@@ -679,6 +789,7 @@ After attention, each token goes through a small neural network independently:
 **Why expand to 3072 first?** The bigger space gives the network room to find patterns that aren't visible at 768 dimensions. Then it compresses back to keep things manageable.
 
 **What is GELU?** It's an activation function (like ReLU, but smoother). It decides how much of each value gets passed through:
+
 - Small values: partially passed through
 - Large values: fully passed through
 - Negative values: mostly blocked
@@ -691,7 +802,7 @@ This is where nonlinearity lives — the feed forward layer adds complexity beyo
 
 ![Output softmax probabilities](https://poloclub.github.io/transformer-explainer/article_assets/softmax.png)
 
-*Figure: The final output — every word in the vocabulary gets a probability score. The model picks the next word from these probabilities.*
+_Figure: The final output — every word in the vocabulary gets a probability score. The model picks the next word from these probabilities._
 
 After all 12 transformer blocks are done:
 
@@ -706,6 +817,7 @@ Pick next token based on probabilities
 ```
 
 For the input `"Data visualization empowers users to"`, the output might look like:
+
 ```
 "visualize"  → 54.67%   ← winner by far
 "create"     → 20.87%
@@ -755,6 +867,7 @@ top-p = 0.9  →  keep adding words until their probabilities sum to 90%
 ```
 
 You can combine all three:
+
 ```
 temperature=0.8, top-k=40, top-p=0.9  →  a good balanced default
 temperature=0.2, top-k=1              →  greedy/deterministic (always picks #1)
@@ -791,39 +904,60 @@ During training, some connections are randomly turned off. This stops the model 
 
 Everything together for the model running in the explainer tool:
 
-| Component | Value |
-|-----------|-------|
-| Vocabulary size | 50,257 tokens |
-| Embedding dimensions | 768 |
-| Transformer blocks | 12 |
-| Attention heads per block | 12 |
-| MLP hidden size | 3,072 (4× expansion) |
-| Total parameters | 124 million |
+| Component                 | Value                |
+| ------------------------- | -------------------- |
+| Vocabulary size           | 50,257 tokens        |
+| Embedding dimensions      | 768                  |
+| Transformer blocks        | 12                   |
+| Attention heads per block | 12                   |
+| MLP hidden size           | 3,072 (4× expansion) |
+| Total parameters          | 124 million          |
 
 ```mermaid
+%%{init: {'theme': 'base'}}%%
 flowchart TD
-    A["Input: 'Data visualization empowers users to'"] --> B["Tokenize\n6 tokens"]
-    B --> C["Token Embedding\n768 numbers per token\nfrom 50,257 × 768 lookup table"]
-    C --> D["+ Positional Encoding\n768 numbers per token"]
-    D --> E["Transformer Block × 12"]
+    A(["🗣️ Input: 'Data visualization empowers users to'"]) --> B(["🔤 Tokenize\n6 tokens"])
+    B --> C(["📖 Token Embedding\n768 numbers per token\nfrom 50,257 × 768 lookup table"])
+    C --> D(["📍 + Positional Encoding\n768 numbers per token"])
+    D --> E(["⚡ Transformer Block × 12"])
 
-    subgraph Block["One Transformer Block (×12)"]
+    subgraph Block["🧩 One Transformer Block  ×12"]
         direction TB
-        LN1["Layer Norm"] --> QKV["Split into Q, K, V"]
-        QKV --> MHA["12-Head Masked Self-Attention\neach head: 768÷12 = 64 dimensions"]
-        MHA --> R1["+ Residual Connection"]
-        R1 --> LN2["Layer Norm"]
-        LN2 --> MLP["MLP: 768 → 3072 → 768\nwith GELU activation"]
-        MLP --> R2["+ Residual Connection"]
+        LN1(["⚖️ Layer Norm"])  --> QKV(["🔀 Split into Q, K, V"])
+        QKV                    --> MHA(["🎯 12-Head Masked Self-Attention\neach head: 768 ÷ 12 = 64 dims"])
+        MHA                    --> R1(["➕ Residual Connection"])
+        R1                     --> LN2(["⚖️ Layer Norm"])
+        LN2                    --> MLP(["🧠 MLP: 768 → 3072 → 768\nGELU activation"])
+        MLP                    --> R2(["➕ Residual Connection"])
     end
 
-    D --> Block
-    Block --> Final["Final embedding of last token\n768 numbers"]
-    Final --> Linear["Linear layer: 768 → 50,257\none score per vocabulary word"]
-    Linear --> Softmax["Softmax → probabilities"]
-    Softmax --> Sample["Sample using temperature + top-k + top-p"]
-    Sample --> OUT["Next token: 'visualize' ✅"]
+    D     --> Block
+    Block --> Final(["✨ Final embedding of last token\n768 numbers"])
+    Final --> Linear(["📊 Linear: 768 → 50,257\none score per vocab word"])
+    Linear --> SM(["🎯 Softmax → probabilities"])
+    SM     --> Sample(["🎲 Sample\ntemperature + top-k + top-p"])
+    Sample --> OUT(["✅ Next token: 'visualize'"])
     OUT -->|"append and repeat"| A
+
+    classDef input    fill:#1a3a5a,stroke:#4A90D9,color:#ffffff,font-weight:bold
+    classDef embed    fill:#1a4a7a,stroke:#5DADE2,color:#ffffff
+    classDef norm     fill:#4a4a1a,stroke:#F39C12,color:#ffffff
+    classDef kv       fill:#3a1a5a,stroke:#9B59B6,color:#ffffff
+    classDef attn     fill:#5a1a5a,stroke:#8E44AD,color:#ffffff,font-weight:bold
+    classDef residual fill:#2a2a3a,stroke:#5D6D7E,color:#cccccc
+    classDef ffn      fill:#1a5a2a,stroke:#27AE60,color:#ffffff,font-weight:bold
+    classDef logit    fill:#5a2a1a,stroke:#E67E22,color:#ffffff,font-weight:bold
+    classDef result   fill:#1a6a2a,stroke:#1ABC9C,color:#ffffff,font-weight:bold
+
+    class A,B input
+    class C,D embed
+    class LN1,LN2 norm
+    class QKV kv
+    class MHA attn
+    class R1,R2 residual
+    class MLP ffn
+    class Final,Linear,SM,Sample logit
+    class OUT result
 ```
 
 ---
