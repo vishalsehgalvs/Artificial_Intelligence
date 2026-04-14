@@ -352,15 +352,25 @@ flowchart TD
 
 ### The Three Special Matrices: WQ, WK, WV
 
-Each word's embedding gets multiplied by three learned matrices:
+Every word produces three vectors from its embedding. Here's what each one means in plain English:
+
+| Vector               | One-liner                                             |
+| -------------------- | ----------------------------------------------------- |
+| **Q — Query vector** | _"What is this word looking for?"_                    |
+| **K — Key vector**   | _"What does this word represent?"_                    |
+| **V — Value vector** | _"What information does this word actually provide?"_ |
+
+Each word's embedding gets multiplied by three learned matrices to produce these:
 
 ```
 For word "dish" (embedding E7):
 
-E7  ×  WQ  =  Q7   (query vector — "what am I looking for?")
-E7  ×  WK  =  K7   (key vector   — "what do I offer?")
-E7  ×  WV  =  V7   (value vector — "what information do I contribute?")
+E7  ×  WQ  =  Q7   (query — "what am I looking for?")
+E7  ×  WK  =  K7   (key   — "what do I represent?")
+E7  ×  WV  =  V7   (value — "what information do I provide?")
 ```
+
+The attention score between two words is computed by matching Q of one word against K of another — how well does what word A is looking for match what word B represents? The higher the match, the more of word B's **V** gets pulled into word A's final contextual embedding.
 
 These matrices (WQ, WK, WV) are learned during training through backpropagation. Once the model is trained, they don't change.
 
@@ -467,7 +477,7 @@ flowchart TD
     I                                  --> J(["🧠 Feed Forward Network\nnon-linear deep processing"])
     J                                  --> K(["➕ Residual Connection"])
     K                                  --> L(["✨ Final Contextual Embedding\none per token"])
-    L                                  --> M{"More\nlayers?"}  
+    L                                  --> M{"More\nlayers?"}
     M -->|"Yes — repeat Nx times"| F
     M -->|"No — done"|              N(["📤 Output to Decoder\nor Classifier"])
 
