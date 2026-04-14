@@ -579,8 +579,258 @@ flowchart TD
 
 ---
 
+---
+
+## Part 12 — Transformer Explainer: See It Live in Your Browser
+
+> 🔗 **[poloclub.github.io/transformer-explainer](https://poloclub.github.io/transformer-explainer)**
+>
+> Built by researchers at Georgia Tech. Runs a real GPT-2 model live in your browser — no install, no account, completely free.
+> Type any sentence, click Generate, and watch every single step of the Transformer happen in real time with live numbers.
+
+This tool uses **GPT-2 (small)** — 124 million parameters, 12 transformer blocks, 12 attention heads, 768-dimensional embeddings. It's simpler than GPT-4 but uses the exact same architecture. Perfect for learning.
+
+---
+
+### What the Tool Shows You — Step by Step
+
+#### Step 1 — Embedding (Text → Numbers)
+
+![Embedding layer](https://poloclub.github.io/transformer-explainer/article_assets/embedding.png)
+
+*Figure: How the input sentence turns into numbers — tokenize → token embedding → positional encoding → final embedding.*
+
+When you type `"Data visualization empowers users to"`:
+
+1. **Tokenize** — split into tokens: `["Data", "visualization", "em", "powers", "users", "to"]`
+   - Note: "empowers" splits into two tokens — "em" and "powers" — because GPT-2 works at the sub-word level
+2. **Token embedding** — each token ID gets looked up in a 50,257 × 768 table (~39 million numbers!) to get its 768-number vector
+3. **Positional encoding** — a second 768-number vector is added to tell the model the word's position
+4. **Final embedding** — token vector + position vector = one 768-number vector per token, ready to go in
+
+---
+
+#### Step 2 — Q, K, V Matrices (How Attention Starts)
+
+![QKV computation](https://poloclub.github.io/transformer-explainer/article_assets/QKV.png)
+
+*Figure: Each token's 768-number vector gets multiplied by three different weight matrices to produce Q, K, and V.*
+
+Think of it like a **web search analogy**:
+
+| Matrix | Web Search Equivalent | What it means in the model |
+|--------|----------------------|---------------------------|
+| **Q (Query)** | The text you type in the search bar | "What am I looking for?" |
+| **K (Key)** | The title/description of each search result | "What does each word advertise about itself?" |
+| **V (Value)** | The actual content of the web page | "What information does each word actually contribute?" |
+
+Each token produces its own Q, K, and V independently, all in parallel.
+
+---
+
+#### Step 3 — Masked Self-Attention (GPT Can't Peek Ahead)
+
+![Masked self-attention](https://poloclub.github.io/transformer-explainer/article_assets/attention.png)
+
+*Figure: The attention matrix — each row shows how much one token attends to all previous tokens. The upper triangle is masked (blocked) so GPT can't peek at future words.*
+
+This is the step that actually changes every token's meaning based on context. Here's what happens:
+
+```
+1. Dot Product
+   Q × Kᵀ  →  attention scores (big square matrix, one score per pair of tokens)
+
+2. Scale
+   divide by √dk  →  prevents numbers from exploding
+
+3. Mask (GPT-specific)
+   upper triangle → set to -infinity
+   (the model cannot see future tokens — it hasn't generated them yet)
+
+4. Softmax
+   converts raw scores → probabilities (each row sums to 1.0)
+
+5. Multiply by V
+   weighted sum of values → new contextual representation for each token
+```
+
+**Why masking?** GPT generates words left to right. When predicting the 4th word, it should only use words 1, 2, and 3 — not word 5 which hasn't been generated yet. The mask enforces this.
+
+BERT doesn't mask — it reads the whole sentence at once (that's why BERT is better at understanding, GPT is better at generating).
+
+GPT-2 has **12 attention heads**, each producing its own version of this. All 12 outputs are concatenated and passed through a linear layer to get back to the original 768 size.
+
+---
+
+#### Step 4 — MLP: The Feed Forward Layer
+
+![MLP layer](https://poloclub.github.io/transformer-explainer/article_assets/mlp.png)
+
+*Figure: The MLP expands each token's 768-number vector up to 3072, applies GELU, then compresses back to 768.*
+
+After attention, each token goes through a small neural network independently:
+
+```
+768 numbers  →  [Linear layer]  →  3072 numbers   (expand 4×)
+3072 numbers →  [GELU activation] →  3072 numbers  (nonlinearity)
+3072 numbers →  [Linear layer]  →  768 numbers    (compress back)
+```
+
+**Why expand to 3072 first?** The bigger space gives the network room to find patterns that aren't visible at 768 dimensions. Then it compresses back to keep things manageable.
+
+**What is GELU?** It's an activation function (like ReLU, but smoother). It decides how much of each value gets passed through:
+- Small values: partially passed through
+- Large values: fully passed through
+- Negative values: mostly blocked
+
+This is where nonlinearity lives — the feed forward layer adds complexity beyond what attention (which is just weighted addition) can capture.
+
+---
+
+#### Step 5 — Output Probabilities (How the Next Word Is Picked)
+
+![Output softmax probabilities](https://poloclub.github.io/transformer-explainer/article_assets/softmax.png)
+
+*Figure: The final output — every word in the vocabulary gets a probability score. The model picks the next word from these probabilities.*
+
+After all 12 transformer blocks are done:
+
+```
+Final token's 768-number embedding
+         ↓
+Linear layer (768 → 50,257)    ← one score (logit) per word in vocabulary
+         ↓
+Softmax                         ← converts to probabilities (all sum to 1.0)
+         ↓
+Pick next token based on probabilities
+```
+
+For the input `"Data visualization empowers users to"`, the output might look like:
+```
+"visualize"  → 54.67%   ← winner by far
+"create"     → 20.87%
+"see"        → 12.09%
+"make"       →  6.26%
+"explore"    →  6.11%
+... 50,252 other words → ~0%
+```
+
+---
+
+### Controlling Randomness — Temperature, Top-K, Top-P
+
+The model doesn't always pick the highest-probability word. You can tune how random or predictable it is:
+
+#### Temperature
+
+```
+temperature = 0.2   →  Very focused. Almost always picks the most likely word.
+                        Outputs feel safe, repetitive, predictable.
+
+temperature = 0.8   →  Balanced. Default for most apps.
+
+temperature = 1.5   →  Creative and wild. Less likely words get more chances.
+                        Outputs feel varied, surprising, sometimes weird.
+```
+
+Mathematically: **divide all logits by temperature before softmax**. A lower temperature makes the gap between high and low scores much bigger — the top word wins even more. A higher temperature flattens the differences so more words compete.
+
+#### Top-K Sampling
+
+Only keep the **K most likely words** as candidates, ignore the rest.
+
+```
+top-k = 5   →  only consider the top 5 words, pick randomly from those 5
+top-k = 50  →  consider the top 50 words, much more diverse
+```
+
+#### Top-P (Nucleus) Sampling
+
+Keep the **smallest group of words whose combined probability adds up to P**.
+
+```
+top-p = 0.9  →  keep adding words until their probabilities sum to 90%
+               Some prompts this might be 3 words, some might be 30 words
+               Adapts automatically to how confident the model is
+```
+
+You can combine all three:
+```
+temperature=0.8, top-k=40, top-p=0.9  →  a good balanced default
+temperature=0.2, top-k=1              →  greedy/deterministic (always picks #1)
+temperature=1.5, top-p=0.95           →  creative/diverse
+```
+
+---
+
+### The Three Supporting Features (Important but Not the Main Show)
+
+#### Residual Connections — "Don't Forget Where You Started"
+
+```
+Block input: X
+Block output: Attention(X) or MLP(X)
+Final:  X + Attention(X)   or   X + MLP(X)
+                 ↑
+           This + is the residual connection
+```
+
+Adding the original input back in means information from early in the network never fully disappears. It also helps gradients flow backwards during training (the vanishing gradient problem). GPT-2 uses residual connections **twice per block** — once around attention, once around MLP.
+
+#### Layer Normalization — "Keep the Numbers Tidy"
+
+After attention and after MLP, the numbers get normalized to have a mean close to 0 and a standard deviation close to 1. This stops the numbers from growing or shrinking out of control through 12 layers, which would make training unstable.
+
+#### Dropout — "Random Off-Switch During Training"
+
+During training, some connections are randomly turned off. This stops the model from memorizing specific patterns — it forces it to find general, robust features. During **inference** (actual use), dropout is turned off completely.
+
+---
+
+### GPT-2 (small) — Full Architecture at a Glance
+
+Everything together for the model running in the explainer tool:
+
+| Component | Value |
+|-----------|-------|
+| Vocabulary size | 50,257 tokens |
+| Embedding dimensions | 768 |
+| Transformer blocks | 12 |
+| Attention heads per block | 12 |
+| MLP hidden size | 3,072 (4× expansion) |
+| Total parameters | 124 million |
+
+```mermaid
+flowchart TD
+    A["Input: 'Data visualization empowers users to'"] --> B["Tokenize\n6 tokens"]
+    B --> C["Token Embedding\n768 numbers per token\nfrom 50,257 × 768 lookup table"]
+    C --> D["+ Positional Encoding\n768 numbers per token"]
+    D --> E["Transformer Block × 12"]
+
+    subgraph Block["One Transformer Block (×12)"]
+        direction TB
+        LN1["Layer Norm"] --> QKV["Split into Q, K, V"]
+        QKV --> MHA["12-Head Masked Self-Attention\neach head: 768÷12 = 64 dimensions"]
+        MHA --> R1["+ Residual Connection"]
+        R1 --> LN2["Layer Norm"]
+        LN2 --> MLP["MLP: 768 → 3072 → 768\nwith GELU activation"]
+        MLP --> R2["+ Residual Connection"]
+    end
+
+    D --> Block
+    Block --> Final["Final embedding of last token\n768 numbers"]
+    Final --> Linear["Linear layer: 768 → 50,257\none score per vocabulary word"]
+    Linear --> Softmax["Softmax → probabilities"]
+    Softmax --> Sample["Sample using temperature + top-k + top-p"]
+    Sample --> OUT["Next token: 'visualize' ✅"]
+    OUT -->|"append and repeat"| A
+```
+
+---
+
 ## Further Learning
 
-- **Visualization tool:** [poloclub.github.io/transformer-explainer](https://poloclub.github.io/transformer-explainer) — interactive, visual walkthrough of the architecture
+- **Interactive tool:** [poloclub.github.io/transformer-explainer](https://poloclub.github.io/transformer-explainer) — type a sentence, click Generate, watch every single step with live numbers and attention maps
 - **3Blue1Brown on YouTube:** Search "Transformer 3Blue1Brown" — watch videos DL5, DL6, DL7 — highly recommended, incredible visual explanations
 - **Original paper:** "Attention Is All You Need" — Vaswani et al., Google, 2017
+- **nanoGPT by Andrej Karpathy:** Clean, minimal GPT implementation in ~300 lines of PyTorch — great for understanding the code side
