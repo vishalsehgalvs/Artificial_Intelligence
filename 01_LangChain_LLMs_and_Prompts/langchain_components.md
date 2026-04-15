@@ -57,6 +57,7 @@ response = model.invoke(prompt)
 ```
 
 **Why this matters:**
+
 - Keeps your prompts clean and reusable
 - Makes it easy to test different variations
 - The system message (personality/rules) is baked in once — you never forget to include it
@@ -77,12 +78,14 @@ from langchain_core.output_parsers import PydanticOutputParser
 ```
 
 **String parser** — just strips the metadata, gives you a clean string:
+
 ```python
 parser = StrOutputParser()
 result = parser.invoke(response)   # plain string instead of AIMessage object
 ```
 
 **Pydantic parser** — tells the LLM to fill in a form and gives you a Python object:
+
 ```python
 from pydantic import BaseModel
 from typing import List
@@ -112,6 +115,7 @@ Think of it as telling the AI: "don't just write an essay — fill in this speci
 Before you can ask an AI questions about your PDF or website, you need to actually read that content into Python. That's what a **Document Loader** does.
 
 It reads a file (or URL), pulls out all the text, and wraps it in a standard `Document` object with two parts:
+
 - `page_content` — the actual text
 - `metadata` — where it came from (filename, page number, URL, etc.)
 
@@ -163,6 +167,7 @@ chunks = splitter.split_documents(docs)
 Imagine a sentence spans the very end of chunk 3 and the very start of chunk 4. Without overlap, you'd never have the full sentence in one place. With a 200-character overlap, both chunks include that boundary region, so nothing important falls through the cracks.
 
 **Chunk size guide:**
+
 ```
 Too large (5000+) → each chunk has multiple topics, search becomes imprecise
 Too small (< 100) → each chunk loses context, "it" with no reference to what "it" is
@@ -202,6 +207,7 @@ This is not random — sentences about the same topic end up with vectors that a
 ```
 
 **Where embeddings are used:**
+
 - Storing document chunks in a vector database
 - Converting a user's question into a vector so you can search for the most relevant chunks
 - Semantic search — find results by meaning, not just matching words
@@ -212,7 +218,7 @@ This is not random — sentences about the same topic end up with vectors that a
 
 A regular database stores rows and columns and lets you search by exact matches ("find all rows where name = Alice"). It has no concept of similarity.
 
-A **Vector Store** stores embeddings and is built to answer: *"which of these stored chunks is closest in meaning to this question?"* — fast, even with millions of entries.
+A **Vector Store** stores embeddings and is built to answer: _"which of these stored chunks is closest in meaning to this question?"_ — fast, even with millions of entries.
 
 ```python
 from langchain_community.vectorstores import Chroma
@@ -233,11 +239,11 @@ results = vectorstore.similarity_search("how does backpropagation work?", k=4)
 
 Popular options:
 
-| Vector Store | Type | Best for |
-|---|---|---|
-| **FAISS** | Local (runs in memory) | Learning, prototypes, no server needed |
-| **Chroma** | Local or server | LangChain projects, easy to persist to disk |
-| **Pinecone** | Cloud service | Production apps, massive scale |
+| Vector Store | Type                   | Best for                                    |
+| ------------ | ---------------------- | ------------------------------------------- |
+| **FAISS**    | Local (runs in memory) | Learning, prototypes, no server needed      |
+| **Chroma**   | Local or server        | LangChain projects, easy to persist to disk |
+| **Pinecone** | Cloud service          | Production apps, massive scale              |
 
 ---
 
@@ -256,6 +262,7 @@ results = retriever.invoke("What is gradient descent?")
 Retrievers can be smarter too:
 
 **MMR (Max Marginal Relevance)** — picks results that are relevant AND varied, so you don't get 4 chunks all saying the same thing:
+
 ```python
 retriever = vectorstore.as_retriever(
     search_type="mmr",
@@ -264,6 +271,7 @@ retriever = vectorstore.as_retriever(
 ```
 
 **MultiQuery Retriever** — uses an LLM to rewrite your question several different ways, runs all of them, then combines the results. Useful when a single phrasing might miss good matches:
+
 ```python
 from langchain_classic.retrievers.multi_query import MultiQueryRetriever
 
@@ -319,13 +327,13 @@ flowchart TD
 
 ## Quick Reference
 
-| Component | Job | Key class |
-|---|---|---|
-| **LLM / Chat Model** | Generates text responses | `ChatGoogleGenerativeAI`, `ChatMistralAI`, `ChatOllama` |
-| **Prompt Template** | Reusable fill-in-the-blank prompt | `ChatPromptTemplate` |
-| **Output Parser** | Converts text reply → Python object | `StrOutputParser`, `PydanticOutputParser` |
-| **Document Loader** | Reads files and websites into Documents | `PyPDFLoader`, `TextLoader`, `WebBaseLoader` |
-| **Text Splitter** | Cuts big documents into small chunks | `RecursiveCharacterTextSplitter` |
-| **Embedding Model** | Turns text into a vector of numbers | `GoogleGenerativeAIEmbeddings`, `OpenAIEmbeddings` |
-| **Vector Store** | Stores vectors and searches by meaning | `Chroma`, `FAISS` |
-| **Retriever** | Searches the vector store for relevant chunks | `vectorstore.as_retriever()`, `MultiQueryRetriever` |
+| Component            | Job                                           | Key class                                               |
+| -------------------- | --------------------------------------------- | ------------------------------------------------------- |
+| **LLM / Chat Model** | Generates text responses                      | `ChatGoogleGenerativeAI`, `ChatMistralAI`, `ChatOllama` |
+| **Prompt Template**  | Reusable fill-in-the-blank prompt             | `ChatPromptTemplate`                                    |
+| **Output Parser**    | Converts text reply → Python object           | `StrOutputParser`, `PydanticOutputParser`               |
+| **Document Loader**  | Reads files and websites into Documents       | `PyPDFLoader`, `TextLoader`, `WebBaseLoader`            |
+| **Text Splitter**    | Cuts big documents into small chunks          | `RecursiveCharacterTextSplitter`                        |
+| **Embedding Model**  | Turns text into a vector of numbers           | `GoogleGenerativeAIEmbeddings`, `OpenAIEmbeddings`      |
+| **Vector Store**     | Stores vectors and searches by meaning        | `Chroma`, `FAISS`                                       |
+| **Retriever**        | Searches the vector store for relevant chunks | `vectorstore.as_retriever()`, `MultiQueryRetriever`     |
