@@ -276,6 +276,7 @@ The code in this folder shows working examples of each part of this pipeline end
 | `arixv_retrievers.py`       | Pulls real research papers from arXiv (the academic paper archive) and uses them as a knowledge source — no PDF needed                                   |
 | `mmr_retrievers.py`         | Side-by-side comparison of regular similarity search vs MMR — shows how MMR picks more varied results instead of returning the same idea four times      |
 | `multiquery_retrievers.py`  | Uses an LLM to rewrite your question in multiple ways, runs all of them, and combines the results — helps when one phrasing alone might miss good chunks |
+| `vectorless_rag.md`         | Deep-dive notes comparing traditional vector-based RAG with Vectorless RAG and PageIndex — when to use each, honest pros and cons, and a decision guide  |
 
 `Generative_AI_part2_notes.pdf` contains the handwritten and typed notes for this whole section — useful as a companion reference alongside the code.
 

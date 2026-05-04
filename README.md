@@ -41,6 +41,7 @@ Artificial_Intelligence/
 │   ├── mmr_retrievers.py              ← retrieval using Max Marginal Relevance (diverse results)
 │   ├── multiquery_retrievers.py       ← retrieval by rewriting the question multiple ways
 │   ├── arixv_retrievers.py            ← retrieval from the ArXiv research papers API
+│   ├── vectorless_rag.md              ← deep-dive: Vectorless RAG vs traditional RAG, PageIndex explained
 │   ├── Generative_AI_part2_notes.pdf  ← PDF notes for Part 2
 │   └── readme.md                      ← full notes for Part 2
 │
