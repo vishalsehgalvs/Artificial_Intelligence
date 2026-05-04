@@ -123,6 +123,7 @@ Original document flow:
 ### Problem 3 — Embeddings cost money and time
 
 Every time you update your document, you need to:
+
 1. Re-chunk the changed sections
 2. Re-embed all the new chunks (API call = money)
 3. Update the vector database
@@ -406,12 +407,14 @@ DECISION GUIDE:
 ### The plain English summary
 
 **Use Traditional RAG when:**
+
 - You have many documents or a large unstructured knowledge base
 - Your queries need to be fast and cheap at scale
 - Your vocabulary is general enough that embeddings understand it
 - You are building something that needs to go live quickly
 
 **Use Vectorless RAG / PageIndex when:**
+
 - You have one (or a few) long, well-structured documents
 - You need to explain exactly where the answer came from
 - Embeddings keep failing you because of niche vocabulary
