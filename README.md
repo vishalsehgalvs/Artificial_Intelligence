@@ -18,7 +18,7 @@ How to connect AI to your own data. Documents, PDFs, embeddings, vector database
 How to give AI models the ability to take action — calling APIs, using tools, and building agents that can plan and execute multi-step tasks on their own. The first mini project (JobSage) is already here.
 
 **Part 4 — LLM Training & Alignment**
-How LLMs are actually built — pre-training, fine-tuning, and alignment. Covers everything from supervised fine-tuning to LoRA, RLHF, DPO, quantization, and diffusion models. Written from scratch in plain English with code.
+How LLMs are actually built and made useful. Covers the full journey from pre-training on raw internet text, through fine-tuning, to alignment techniques like RLHF, DPO, and Policy Gradients. Also includes quantization (making models smaller) and diffusion models. Everything is written from scratch in plain English with code.
 
 ---
 
@@ -51,14 +51,14 @@ Artificial_Intelligence/
 ├── 03_Tools_Agents_and_APIs/          ← Part 3: tools, agents, tool calling (in progress)
 │   └── JobSage/                       ← mini project: paste a job description, get clean structured data back
 │
-├── 04_LLM_Training_and_Alignment/     ← Part 4: how LLMs are trained and fine-tuned
-│   ├── pretrain.md       ← how LLM pre-training works (next-token prediction on the internet)
+├── 04_LLM_Training_and_Alignment/     ← Part 4: how LLMs are trained and made useful
+│   ├── pretrain.md       ← how LLM pre-training works (next-token prediction on internet text)
 │   ├── sft.md            ← Supervised Fine-Tuning — how a base model becomes an assistant
 │   ├── lora.md           ← LoRA fine-tuning explained from scratch
 │   ├── rlhf.md           ← RLHF + PPO — the technique that turned GPT into ChatGPT
 │   ├── dpo.md            ← Direct Preference Optimization — a simpler alternative to RLHF
-│   ├── policy.md         ← Policy Gradients → PPO explained from scratch, with LLM examples
-│   ├── quantization.md   ← quantization from scratch — how models shrink from FP32 to INT4
+│   ├── policy.md         ← Policy Gradients → PPO explained from scratch, applied to LLMs
+│   ├── quantization.md   ← how models shrink from FP32 to INT4 without falling apart
 │   └── diffusion.md      ← how diffusion models (Stable Diffusion, DALL-E) actually work
 │
 ├── README.md                          ← this file
