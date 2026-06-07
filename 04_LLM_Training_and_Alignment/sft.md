@@ -9,16 +9,19 @@ This singular focus creates the **Parrot Problem**: the model becomes a master o
 Let's make this concrete. You prompt a raw, pre-trained base model (like the original GPT-3) with a question.
 
 **Your Prompt:**
+
 ```
 What is the primary cause of Earth's seasons?
 ```
 
 **An Assistant's Expected Response:**
+
 ```
 The primary cause of Earth's seasons is the tilt of the Earth's axis, which is about 23.5 degrees...
 ```
 
 **The Base Model's Likely Response:**
+
 ```
 What is the primary cause of Earth's seasons?
 A) The Earth's distance from the sun.
@@ -69,10 +72,10 @@ def prepare_sft_batch(prompt: str, response: str, tokenizer):
         "labels": labels
     }
 ```
+
 That's the entire trick. The rest is just standard model training. PyTorch's loss function is hard-coded to ignore `-100` values, so by feeding it these `labels`, we force the model to learn one thing: "When you see `<|assistant|>`, generate the expert response."
 
 By mastering this function, you master SFT.
-
 
 Our journey will take us from the problem to the complete solution.
 
@@ -83,7 +86,7 @@ graph TD
     C -- "Result: Instruction-following" --> D[Aligned Assistant Model];
 ```
 
-To understand *why* this data transformation is so effective, we must first master the engine it modifies. In the next chapter, we will dissect the mathematical core of pre-training—Cross-Entropy Loss—to see exactly how the parrot learns to talk in the first place.
+To understand _why_ this data transformation is so effective, we must first master the engine it modifies. In the next chapter, we will dissect the mathematical core of pre-training—Cross-Entropy Loss—to see exactly how the parrot learns to talk in the first place.
 
 ## **Chapter 2: The Engine of Pre-training: Cross-Entropy Loss**
 
@@ -99,31 +102,32 @@ Let's make this concrete with a minimal example that you can calculate by hand.
 
 Imagine a tiny model with a vocabulary of only six words.
 
-*   **Vocabulary:** `{"<pad>": 0, "The": 1, "cat": 2, "sat": 3, "on": 4, "mat": 5}`
-*   **Input Sequence (`input_ids`):** "The cat sat" -> `[1, 2, 3]`
-*   **Target Sequence (`labels`):** "cat sat on" -> `[2, 3, 4]`
+- **Vocabulary:** `{"<pad>": 0, "The": 1, "cat": 2, "sat": 3, "on": 4, "mat": 5}`
+- **Input Sequence (`input_ids`):** "The cat sat" -> `[1, 2, 3]`
+- **Target Sequence (`labels`):** "cat sat on" -> `[2, 3, 4]`
 
 The model processes the input and produces a vector of raw scores, or **logits**, for each possible next word at each position. Let's assume our model has produced the following logits:
 
-| Position | Input Context | Model's Output Logits (for the next token) |
-| :--- | :--- | :--- |
-| 1 | `[1]` ("The") | `[0.1, 0.2, 2.0, 0.5, 0.3, 0.1]` |
-| 2 | `[1, 2]` ("The cat") | `[0.1, 0.1, 0.2, 2.5, 0.4, 0.2]` |
-| 3 | `[1, 2, 3]` ("The cat sat")| `[0.2, 0.1, 0.1, 0.3, 3.0, 0.5]` |
+| Position | Input Context               | Model's Output Logits (for the next token) |
+| :------- | :-------------------------- | :----------------------------------------- |
+| 1        | `[1]` ("The")               | `[0.1, 0.2, 2.0, 0.5, 0.3, 0.1]`           |
+| 2        | `[1, 2]` ("The cat")        | `[0.1, 0.1, 0.2, 2.5, 0.4, 0.2]`           |
+| 3        | `[1, 2, 3]` ("The cat sat") | `[0.2, 0.1, 0.1, 0.3, 3.0, 0.5]`           |
 
 To calculate the loss, we perform three steps for each position:
+
 1.  **Softmax:** Convert the raw logits into a probability distribution. $ \text{softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}} $.
 2.  **Get Target Probability:** Find the probability the model assigned to the correct target token.
 3.  **Calculate Loss:** Take the negative natural logarithm of that probability. $\text{Loss} = -\log(P_{\text{target}})$.
 
 Let's fill out the table with the math, step-by-step.
 
-| Step | Input Context | Target Token | Model's Logits | Softmax Probabilities | Prob. of Target Token | Loss (-log P) |
-| :-- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1**| "The" | `cat` (idx 2) | `[0.1,..,**2.0**,..]` | `[0.08,..,**0.593**,..]` | `0.593` | `-log(0.593) = 0.522` |
-| **2**| "The cat"| `sat` (idx 3) | `[0.1,..,**2.5**,..]` | `[0.07,..,**0.793**,..]` | `0.793` | `-log(0.793) = 0.232` |
-| **3**| "The cat sat"| `on` (idx 4) | `[0.2,..,**3.0**,..]` | `[0.08,..,**0.773**,..]` | `0.773` | `-log(0.773) = 0.257` |
-| | | | | **Total Loss (Average)** | | | **(0.522+0.232+0.257)/3 = 0.337** |
+| Step  | Input Context | Target Token  | Model's Logits        | Softmax Probabilities    | Prob. of Target Token | Loss (-log P)         |
+| :---- | :------------ | :------------ | :-------------------- | :----------------------- | :-------------------- | :-------------------- | --------------------------------- |
+| **1** | "The"         | `cat` (idx 2) | `[0.1,..,**2.0**,..]` | `[0.08,..,**0.593**,..]` | `0.593`               | `-log(0.593) = 0.522` |
+| **2** | "The cat"     | `sat` (idx 3) | `[0.1,..,**2.5**,..]` | `[0.07,..,**0.793**,..]` | `0.793`               | `-log(0.793) = 0.232` |
+| **3** | "The cat sat" | `on` (idx 4)  | `[0.2,..,**3.0**,..]` | `[0.08,..,**0.773**,..]` | `0.773`               | `-log(0.773) = 0.257` |
+|       |               |               |                       | **Total Loss (Average)** |                       |                       | **(0.522+0.232+0.257)/3 = 0.337** |
 
 The final loss for this sequence is the **average** of the individual token losses, which is **0.337**. This single number tells the optimizer how wrong the model was across the entire sequence, and backpropagation uses it to adjust the model's weights.
 
@@ -157,13 +161,16 @@ print(f"Logits shape (flattened): {logits_flat.shape}")
 print(f"Targets shape (flattened): {targets_flat.shape}")
 print(f"Calculated Loss: {loss.item():.3f}")
 ```
+
 **Output:**
+
 ```
 Logits shape (original): torch.Size([1, 3, 6])
 Logits shape (flattened): torch.Size([3, 6])
 Targets shape (flattened): torch.Size([3])
 Calculated Loss: 0.337
 ```
+
 The result perfectly matches our manual, step-by-step calculation. This is the simple, powerful engine that drives large-scale pre-training.
 
 Now we can see the source of the Parrot Problem with mathematical clarity. The model's sole objective is to minimize this cross-entropy loss over a massive dataset of text from the internet. It will adjust its weights to become a master of statistical mimicry because that is the most effective way to reduce the loss.
@@ -172,7 +179,7 @@ When you prompt it with `Q: What is the capital of Italy?`, it doesn't "understa
 
 It is a **parrot** because its training objective is **mimicry**.
 
-To fix this, we need to change the data it learns from. We need to show it examples not of how text *is*, but of how we *want* it to be. This is the goal of Supervised Fine-Tuning, which we will build from the ground up in the next chapter.
+To fix this, we need to change the data it learns from. We need to show it examples not of how text _is_, but of how we _want_ it to be. This is the goal of Supervised Fine-Tuning, which we will build from the ground up in the next chapter.
 
 ## **Chapter 3: The SFT Solution: The Theory of Expert Imitation**
 
@@ -180,13 +187,13 @@ In the last chapter, we established that the pre-training objective creates a po
 
 We shift the model's diet. Instead of training on a vast, unstructured sea of internet text, we move to a curated, structured dataset of `(prompt, response)` pairs. This is like taking the model out of a library containing every book ever written and handing it a focused curriculum of expert-written Q&A flashcards.
 
-*   **Prompt:** "Explain the concept of gravity to a 6-year-old in a short paragraph."
-*   **Response:** "Imagine the Earth is a giant magnet, but for everything! It's always gently pulling you and your toys down towards it. That's why when you jump, you always come back down. This special pulling power is called gravity!"
+- **Prompt:** "Explain the concept of gravity to a 6-year-old in a short paragraph."
+- **Response:** "Imagine the Earth is a giant magnet, but for everything! It's always gently pulling you and your toys down towards it. That's why when you jump, you always come back down. This special pulling power is called gravity!"
 
-
-We can't just feed the prompt and response to the model separately. A language model only understands a single, continuous sequence of tokens. Furthermore, it needs to learn the *structure* of a conversation—who is speaking and when.
+We can't just feed the prompt and response to the model separately. A language model only understands a single, continuous sequence of tokens. Furthermore, it needs to learn the _structure_ of a conversation—who is speaking and when.
 
 To solve this, we introduce **special tokens** and a **chat template**. A common template formats the data like this:
+
 ```
 <|user|>
 {prompt}
@@ -195,6 +202,7 @@ To solve this, we introduce **special tokens** and a **chat template**. A common
 {response}
 <|end|>
 ```
+
 Our `(prompt, response)` pair is formatted into a single string, which is then tokenized into a single sequence of `input_ids`.
 
 **Example:**
@@ -202,41 +210,43 @@ Our `(prompt, response)` pair is formatted into a single string, which is then t
 
 This template teaches the model the turn-taking format of a conversation. It learns that after seeing `<|assistant|>`, it is its turn to generate helpful text.
 
-Now we face the critical problem. If we feed this entire formatted sequence into the standard next-token prediction objective from Chapter 2, we would be training the model to predict *the user's prompt* as well as the assistant's response.
+Now we face the critical problem. If we feed this entire formatted sequence into the standard next-token prediction objective from Chapter 2, we would be training the model to predict _the user's prompt_ as well as the assistant's response.
 
 **This is wrong and counterproductive.** We don't want the model to learn to generate user prompts. We only want to penalize the model for errors it makes when it's the assistant's turn to speak.
 
-The solution is an elegant engineering trick called **loss masking**. We create a `labels` tensor that is a copy of our `input_ids`. Then, for every token we want the loss function to *ignore*, we replace its ID with a special value: **-100**. PyTorch's `CrossEntropyLoss` is specifically designed to completely ignore any target with this value.
+The solution is an elegant engineering trick called **loss masking**. We create a `labels` tensor that is a copy of our `input_ids`. Then, for every token we want the loss function to _ignore_, we replace its ID with a special value: **-100**. PyTorch's `CrossEntropyLoss` is specifically designed to completely ignore any target with this value.
 
 Let's see this in action. Assume we have the following tokenization for a simplified example:
-*   `<|user|>` -> 6, `Explain` -> 7, `gravity` -> 8, `<|end|>` -> 9, `<|assistant|>` -> 10, `Gravity` -> 11, `is` -> 12, `a` -> 13, `force` -> 14
+
+- `<|user|>` -> 6, `Explain` -> 7, `gravity` -> 8, `<|end|>` -> 9, `<|assistant|>` -> 10, `Gravity` -> 11, `is` -> 12, `a` -> 13, `force` -> 14
 
 Our single sequence is fed into the model. The `input_ids` contain the full conversation. The `labels` tensor, however, is strategically filled with `-100` to mask out everything that isn't the assistant's response.
 
-| Token Text | `input_ids` | `labels` | Loss Calculated? |
-| :--- | :--- | :--- | :--- |
-| `<\|user\|>` | 6 | -100 | **No** |
-| `Explain` | 7 | -100 | **No** |
-| `gravity` | 8 | -100 | **No** |
-| `<\|end\|>` | 9 | -100 | **No** |
-| `<\|assistant\|>`| 10 | -100 | **No** |
-| **`Gravity`** | 11 | 11 | **Yes** |
-| **`is`** | 12 | 12 | **Yes** |
-| **`a`** | 13 | 13 | **Yes** |
-| **`force`** | 14 | 14 | **Yes** |
-| **`<\|end\|>`** | 9 | 9 | **Yes** |
+| Token Text        | `input_ids` | `labels` | Loss Calculated? |
+| :---------------- | :---------- | :------- | :--------------- |
+| `<\|user\|>`      | 6           | -100     | **No**           |
+| `Explain`         | 7           | -100     | **No**           |
+| `gravity`         | 8           | -100     | **No**           |
+| `<\|end\|>`       | 9           | -100     | **No**           |
+| `<\|assistant\|>` | 10          | -100     | **No**           |
+| **`Gravity`**     | 11          | 11       | **Yes**          |
+| **`is`**          | 12          | 12       | **Yes**          |
+| **`a`**           | 13          | 13       | **Yes**          |
+| **`force`**       | 14          | 14       | **Yes**          |
+| **`<\|end\|>`**   | 9           | 9        | **Yes**          |
 
 This achieves our goal perfectly. The gradients are only calculated based on the model's ability to generate the expert-written response. It learns the core rule: "When you see the token sequence `<|user|> ... <|end|> <|assistant|>`, your goal is to generate the following sequence."
 
-The SFT loss is the same cross-entropy loss from pre-training, but with this crucial modification. The loss is averaged *only* over the non-masked, response tokens.
+The SFT loss is the same cross-entropy loss from pre-training, but with this crucial modification. The loss is averaged _only_ over the non-masked, response tokens.
 
 Given a dataset $\mathcal{D}_{\text{SFT}}$ of `(prompt, response)` pairs, $(x, y)$, the SFT objective is to minimize the negative log-probability of the response tokens, conditioned on the prompt:
 
-$$ \mathcal{L}_{\text{SFT}}(\theta) = - \mathbb{E}_{(x, y) \sim \mathcal{D}_{\text{SFT}}} \left[ \sum_{t=1}^{|y|} \log P_{\theta}(y_t | x, y_{<t}) \right] $$
+$$ \mathcal{L}_{\text{SFT}}(\theta) = - \mathbb{E}_{(x, y) \sim \mathcal{D}_{\text{SFT}}} \left[ \sum_{t=1}^{|y|} \log P*{\theta}(y_t | x, y*{<t}) \right] $$
 
 Where:
-*   $P_{\theta}(y_t | x, y_{<t})$ is the probability assigned by the model $\theta$ to the correct token $y_t$ at timestep $t$ of the response.
-*   The summation $\sum_{t=1}^{|y|}$ is performed **only over the tokens in the target response $y$**, not the prompt $x$. This is the formal mathematical representation of our loss masking trick.
+
+- $P_{\theta}(y_t | x, y_{<t})$ is the probability assigned by the model $\theta$ to the correct token $y_t$ at timestep $t$ of the response.
+- The summation $\sum_{t=1}^{|y|}$ is performed **only over the tokens in the target response $y$**, not the prompt $x$. This is the formal mathematical representation of our loss masking trick.
 
 We now have the complete theory of Supervised Fine-Tuning. We know why we need chat templates and, most importantly, we understand the critical role of loss masking.
 
@@ -325,21 +335,21 @@ prepared_batch = sft_data_collator(sft_batch, tokenizer)
 
 Let's print the prepared batch to see our loss masking in action. The table below shows the first example from our batch, connecting the theory directly to our code's output.
 
-| Token Text | `input_ids` | `labels` | Loss Calculated? |
-| :--- | :--- | :--- | :--- |
-| `<\|user\|>` | 9 | -100 | **No** |
-| `The` | 1 | -100 | **No** |
-| `quick` | 2 | -100 | **No** |
-| `brown` | 3 | -100 | **No** |
-| `fox` | 4 | -100 | **No** |
-| `<\|end\|>` | 11 | -100 | **No** |
-| `<\|assistant\|>`| 10 | -100 | **No** |
-| **`jumps`** | 5 | 5 | **Yes** |
-| **`over`** | 6 | 6 | **Yes** |
-| **`the`** | 1 | 1 | **Yes** |
-| **`lazy`** | 7 | 7 | **Yes** |
-| **`dog`** | 8 | 8 | **Yes** |
-| **`<\|end\|>`** | 11 | 11 | **Yes** |
+| Token Text        | `input_ids` | `labels` | Loss Calculated? |
+| :---------------- | :---------- | :------- | :--------------- |
+| `<\|user\|>`      | 9           | -100     | **No**           |
+| `The`             | 1           | -100     | **No**           |
+| `quick`           | 2           | -100     | **No**           |
+| `brown`           | 3           | -100     | **No**           |
+| `fox`             | 4           | -100     | **No**           |
+| `<\|end\|>`       | 11          | -100     | **No**           |
+| `<\|assistant\|>` | 10          | -100     | **No**           |
+| **`jumps`**       | 5           | 5        | **Yes**          |
+| **`over`**        | 6           | 6        | **Yes**          |
+| **`the`**         | 1           | 1        | **Yes**          |
+| **`lazy`**        | 7           | 7        | **Yes**          |
+| **`dog`**         | 8           | 8        | **Yes**          |
+| **`<\|end\|>`**   | 11          | 11       | **Yes**          |
 
 The code has perfectly executed the theory. The `labels` tensor is correctly masked, ensuring that gradients will only be computed for the assistant's response.
 
@@ -353,7 +363,9 @@ print("\n--- Decoded Labels (non-masked part) ---")
 response_part = prepared_batch["labels"][0][prepared_batch["labels"][0] != -100]
 print(f"Decoded: '{tokenizer.decode(response_part)}'")
 ```
+
 **Output:**
+
 ```
 --- Prepared Batch (First Example) ---
 Input IDs: tensor([ 9,  1,  2,  3,  4, 11, 10,  5,  6,  1,  7,  8, 11])
@@ -387,9 +399,10 @@ def sft_training_step(policy_model, optimizer, batch):
 # Conceptual usage:
 # loss_value = sft_training_step(my_gpt_model, my_optimizer, prepared_batch)
 ```
-We have successfully implemented the full SFT pipeline from scratch. We have taught the model *what* a helpful response looks like and how to generate it. The parrot is learning to become an assistant.
 
-However, this method of direct imitation has a crucial weakness. All "good" responses are treated equally. We have no way to tell the model that one good response might be slightly better, more detailed, or safer than another. We've taught the model what to say, but not how to *judge*.
+We have successfully implemented the full SFT pipeline from scratch. We have taught the model _what_ a helpful response looks like and how to generate it. The parrot is learning to become an assistant.
+
+However, this method of direct imitation has a crucial weakness. All "good" responses are treated equally. We have no way to tell the model that one good response might be slightly better, more detailed, or safer than another. We've taught the model what to say, but not how to _judge_.
 
 In the final chapter, we will explore this limitation and see where SFT fits into the broader alignment landscape.
 
@@ -409,17 +422,18 @@ However, SFT has a profound, built-in limitation: it treats all "good" answers a
 
 Consider a user prompt: "Summarize the impact of the printing press."
 
-*   **Response A (Good):** "The printing press, invented by Johannes Gutenberg around 1440, allowed for the mass production of books. This made information more accessible and increased literacy rates across Europe."
-*   **Response B (Better):** "Gutenberg's printing press democratized knowledge by drastically lowering the cost of books. This fueled the Renaissance, the Reformation, and the Scientific Revolution by enabling the rapid spread of new ideas and challenging the information monopoly of religious and state authorities."
+- **Response A (Good):** "The printing press, invented by Johannes Gutenberg around 1440, allowed for the mass production of books. This made information more accessible and increased literacy rates across Europe."
+- **Response B (Better):** "Gutenberg's printing press democratized knowledge by drastically lowering the cost of books. This fueled the Renaissance, the Reformation, and the Scientific Revolution by enabling the rapid spread of new ideas and challenging the information monopoly of religious and state authorities."
 
 As humans, we can clearly state a preference: **B is better than A**. It's more insightful, detailed, and provides deeper context.
 
 An SFT model cannot learn this **relative preference**.
-*   If your SFT dataset only contains responses like A, your model will learn to be factually correct but basic.
-*   If your dataset contains both A and B, the model will learn to produce an *average* of the two styles, potentially becoming generic.
-*   It has no mechanism to understand that B is a more desirable output than A. It can only imitate what it is shown.
 
-SFT teaches a model *what* to say, but not how to *judge* or *choose* between multiple good options.
+- If your SFT dataset only contains responses like A, your model will learn to be factually correct but basic.
+- If your dataset contains both A and B, the model will learn to produce an _average_ of the two styles, potentially becoming generic.
+- It has no mechanism to understand that B is a more desirable output than A. It can only imitate what it is shown.
+
+SFT teaches a model _what_ to say, but not how to _judge_ or _choose_ between multiple good options.
 
 To overcome this limitation, the field of AI alignment developed techniques for **preference tuning**. These methods move beyond simple imitation and teach the model to understand human judgments directly.
 

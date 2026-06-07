@@ -7,11 +7,13 @@ A pre-trained Large Language Model (LLM) is a modern marvel. Trained on a vast e
 For instance, if you ask a raw base model a question, you might get this:
 
 **Your Prompt:**
+
 ```
 What is the primary cause of Earth's seasons?
 ```
 
 **The Base Model's Likely Response:**
+
 ```
 What is the primary cause of Earth's seasons?
 A) The Earth's distance from the sun.
@@ -20,7 +22,7 @@ C) The speed of the Earth's rotation.
 D) Ocean currents and wind patterns.
 ```
 
-The model didn't answer your question. It continued your text by turning it into a multiple-choice quiz. Why? Because it has seen countless quizzes online and, from a statistical standpoint, this is a highly probable pattern. It has no concept of your *intent*.
+The model didn't answer your question. It continued your text by turning it into a multiple-choice quiz. Why? Because it has seen countless quizzes online and, from a statistical standpoint, this is a highly probable pattern. It has no concept of your _intent_.
 
 #### The First Solution: Supervised Fine-Tuning (SFT)
 
@@ -28,12 +30,12 @@ The first step in fixing this is **Supervised Fine-Tuning (SFT)**. The core idea
 
 This process is incredibly effective. It takes the raw, aimless parrot and turns it into a capable apprentice that understands conversational structure and follows instructions.
 
-| Characteristic | Pre-trained Base Model (The Parrot) | SFT Model (The Apprentice) |
-| :--- | :--- | :--- |
-| **Training Goal** | Predict the next word in any text. | Imitate expert-written responses to specific prompts. |
-| **Training Data**| Unstructured internet text (books, websites, code).| Curated `(prompt, ideal_response)` pairs. |
-| **Behavior** | Completes text patterns; no sense of user intent. | Follows instructions; adopts a helpful persona. |
-| **Key Weakness** | Doesn't know how to be a helpful assistant. | Assumes there is only one "perfect" answer for every prompt. |
+| Characteristic    | Pre-trained Base Model (The Parrot)                 | SFT Model (The Apprentice)                                   |
+| :---------------- | :-------------------------------------------------- | :----------------------------------------------------------- |
+| **Training Goal** | Predict the next word in any text.                  | Imitate expert-written responses to specific prompts.        |
+| **Training Data** | Unstructured internet text (books, websites, code). | Curated `(prompt, ideal_response)` pairs.                    |
+| **Behavior**      | Completes text patterns; no sense of user intent.   | Follows instructions; adopts a helpful persona.              |
+| **Key Weakness**  | Doesn't know how to be a helpful assistant.         | Assumes there is only one "perfect" answer for every prompt. |
 
 #### The SFT Limitation: The "Shades of Gray" Problem
 
@@ -41,14 +43,14 @@ SFT is a huge leap forward, but it has a fundamental weakness: it treats alignme
 
 The real world, however, is full of nuance. Often, there isn't one "perfect" answer. Consider these two AI-generated summaries of an article:
 
-*   **Response A:** "The article discusses climate change, focusing on rising sea levels and CO2 emissions. It mentions policy solutions." (Factually correct, but basic).
-*   **Response B:** "The article provides a detailed analysis of climate change, attributing rising sea levels primarily to thermal expansion and glacial melt. It contrasts market-based policy solutions, like carbon taxes, with regulatory approaches." (More detailed, nuanced, and helpful).
+- **Response A:** "The article discusses climate change, focusing on rising sea levels and CO2 emissions. It mentions policy solutions." (Factually correct, but basic).
+- **Response B:** "The article provides a detailed analysis of climate change, attributing rising sea levels primarily to thermal expansion and glacial melt. It contrasts market-based policy solutions, like carbon taxes, with regulatory approaches." (More detailed, nuanced, and helpful).
 
 As a human, you can instantly state a preference: **B is better than A**. SFT has no way to learn this relative judgment. It can only imitate.
 
 This brings us to the core economic and practical insight that powers the next generation of alignment techniques:
 
-> **It is exponentially easier for a human to *judge* which of two responses is better than it is to *create* a single perfect response from scratch.**
+> **It is exponentially easier for a human to _judge_ which of two responses is better than it is to _create_ a single perfect response from scratch.**
 
 Creating a "perfect" response for an SFT dataset is time-consuming and expensive. Simply choosing `A` or `B` is fast and cheap. If we could build an algorithm that learns directly from these simple preferences, we could align our models more efficiently and effectively.
 
@@ -56,10 +58,9 @@ That algorithm is **Direct Preference Optimization (DPO)**.
 
 By the end of this tutorial, you will understand every single component of the DPO formula. It may look intimidating now, but we are going to build it together, piece by piece, starting from this simple idea of human preference.
 
-$$ \mathcal{L}_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = - \mathbb{E}_{(x, y_w, y_l) \sim \mathcal{D}} \left[ \log \sigma \left( \beta \left( \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right) \right) \right] $$
+$$ \mathcal{L}_{\text{DPO}}(\pi_\theta; \pi*{\text{ref}}) = - \mathbb{E}*{(x, y*w, y_l) \sim \mathcal{D}} \left[ \log \sigma \left( \beta \left( \log \frac{\pi*\theta(y*w|x)}{\pi*{\text{ref}}(y*w|x)} - \log \frac{\pi*\theta(y*l|x)}{\pi*{\text{ref}}(y_l|x)} \right) \right) \right] $$
 
 Our journey begins in the next chapter, where we will translate the simple human judgment "B is better than A" into our first piece of the mathematical puzzle.
-
 
 ## **Chapter 2: From Scores to Probabilities: The Bradley-Terry Model**
 
@@ -71,36 +72,38 @@ The most intuitive way to model a preference is to assume that each option posse
 
 Let's revisit our example from Chapter 1:
 
-*   **Response B:** "The article provides a detailed analysis of climate change, attributing rising sea levels primarily to thermal expansion and glacial melt. It contrasts market-based policy solutions, like carbon taxes, with regulatory approaches." (The preferred one)
-*   **Response A:** "The article discusses climate change, focusing on rising sea levels and CO2 emissions. It mentions policy solutions." (The rejected one)
+- **Response B:** "The article provides a detailed analysis of climate change, attributing rising sea levels primarily to thermal expansion and glacial melt. It contrasts market-based policy solutions, like carbon taxes, with regulatory approaches." (The preferred one)
+- **Response A:** "The article discusses climate change, focusing on rising sea levels and CO2 emissions. It mentions policy solutions." (The rejected one)
 
 If a human judges **B > A**, we can assume:
-*   $r_{\text{B}}$ (quality score for Response B) > $r_{\text{A}}$ (quality score for Response A)
+
+- $r_{\text{B}}$ (quality score for Response B) > $r_{\text{A}}$ (quality score for Response A)
 
 For our tutorial, let's assign some hypothetical scores to make this concrete:
-*   $r_{\text{winner}}$ (for Response B): **2.5**
-*   $r_{\text{loser}}$ (for Response A): **0.8**
+
+- $r_{\text{winner}}$ (for Response B): **2.5**
+- $r_{\text{loser}}$ (for Response A): **0.8**
 
 Our goal is to build a system that, given these scores, can predict the human's preference with a probability.
 
 #### Formalizing Preferences: The Bradley-Terry Model
 
-A simple yet powerful mathematical framework for modeling pairwise comparisons like this is the **Bradley-Terry model**. It states that the probability of one item (the winner) being preferred over another (the loser) is a function of the *difference* in their underlying quality scores.
+A simple yet powerful mathematical framework for modeling pairwise comparisons like this is the **Bradley-Terry model**. It states that the probability of one item (the winner) being preferred over another (the loser) is a function of the _difference_ in their underlying quality scores.
 
 The formula is:
 
-$$ P(\text{winner} \succ \text{loser}) = \sigma(r_{\text{winner}} - r_{\text{loser}}) $$
+$$ P(\text{winner} \succ \text{loser}) = \sigma(r*{\text{winner}} - r*{\text{loser}}) $$
 
 Let's break down this formula:
 
-*   **$P(\text{winner} \succ \text{loser})$:** This is the probability that the winner is indeed preferred over the loser, according to our model.
-*   **$r_{\text{winner}}$ and $r_{\text{loser}}$:** These are the quality scores we just discussed.
-*   **$\sigma$:** This is the **sigmoid function**. It's a fundamental tool in machine learning for converting any real number into a probability between 0 and 1.
-    *   The sigmoid function is defined as: $\sigma(x) = \frac{1}{1 + e^{-x}}$
-    *   It squashes values:
-        *   Large positive `x` (big score difference) -> `σ(x)` approaches 1.0 (high probability)
-        *   `x = 0` (no score difference) -> `σ(x)` is 0.5 (50/50 probability)
-        *   Large negative `x` (loser's score is much higher) -> `σ(x)` approaches 0.0 (low probability)
+- **$P(\text{winner} \succ \text{loser})$:** This is the probability that the winner is indeed preferred over the loser, according to our model.
+- **$r_{\text{winner}}$ and $r_{\text{loser}}$:** These are the quality scores we just discussed.
+- **$\sigma$:** This is the **sigmoid function**. It's a fundamental tool in machine learning for converting any real number into a probability between 0 and 1.
+  - The sigmoid function is defined as: $\sigma(x) = \frac{1}{1 + e^{-x}}$
+  - It squashes values:
+    - Large positive `x` (big score difference) -> `σ(x)` approaches 1.0 (high probability)
+    - `x = 0` (no score difference) -> `σ(x)` is 0.5 (50/50 probability)
+    - Large negative `x` (loser's score is much higher) -> `σ(x)` approaches 0.0 (low probability)
 
 #### Step-by-Step Calculation with Our Example
 
@@ -116,13 +119,13 @@ Our model predicts an **84.5% probability** that Response B would be preferred o
 
 The sigmoid function's behavior for different score differences is crucial to grasp:
 
-| Score Difference ($\Delta r$) | Sigmoid($\Delta r$) | Interpretation |
-| :--- | :--- | :--- |
-| Large Positive (e.g., 5.0) | ~0.993 | Almost certain winner is preferred. |
-| **Our Example (1.7)** | **~0.845** | **Confident winner is preferred.** |
-| Zero (e.g., 0.0) | 0.500 | Completely uncertain; a 50/50 toss-up. |
-| Negative (e.g., -1.7) | ~0.155 | Confident *loser* is preferred (our scores are "wrong" for the human judgment). |
-| Large Negative (e.g., -5.0)| ~0.007 | Almost certain loser is preferred. |
+| Score Difference ($\Delta r$) | Sigmoid($\Delta r$) | Interpretation                                                                  |
+| :---------------------------- | :------------------ | :------------------------------------------------------------------------------ |
+| Large Positive (e.g., 5.0)    | ~0.993              | Almost certain winner is preferred.                                             |
+| **Our Example (1.7)**         | **~0.845**          | **Confident winner is preferred.**                                              |
+| Zero (e.g., 0.0)              | 0.500               | Completely uncertain; a 50/50 toss-up.                                          |
+| Negative (e.g., -1.7)         | ~0.155              | Confident _loser_ is preferred (our scores are "wrong" for the human judgment). |
+| Large Negative (e.g., -5.0)   | ~0.007              | Almost certain loser is preferred.                                              |
 
 We have successfully taken a simple human preference and converted it into a quantifiable probability. This `P(winner > loser)` is the first critical piece of our DPO puzzle. In the next chapter, we'll see how to turn this probability into a "loss" that our LLM can learn from.
 
@@ -140,7 +143,7 @@ $$ \mathcal{L} = -\log \left( P(\text{winner} \succ \text{loser}) \right) $$
 
 Now, we can combine this with the Bradley-Terry formula from Chapter 2 to create the complete loss function for our abstract scores:
 
-$$ \mathcal{L} = -\log(\sigma(r_{\text{winner}} - r_{\text{loser}})) $$
+$$ \mathcal{L} = -\log(\sigma(r*{\text{winner}} - r*{\text{loser}})) $$
 
 #### A Quick Detour: Why Use the Negative Logarithm?
 
@@ -148,17 +151,17 @@ Why not use a simpler function, like `Loss = 1 - P`? The negative logarithm has 
 
 Let's compare the two:
 
-| Model's Probability `P` | Simpler Loss (`1 - P`) | **NLL Loss (`-log(P)`)** |
-| :--- | :--- | :--- |
-| 0.99 (Very Confident & Correct) | 0.01 | **0.01** |
-| 0.50 (Uncertain) | 0.50 | **0.69** |
-| 0.10 (Confident & Wrong) | 0.90 | **2.30** |
-| 0.01 (Very Confident & Wrong) | 0.99 | **4.61** |
-| 0.001 (Extremely Confident & Wrong) | 0.999 | **6.91** |
+| Model's Probability `P`             | Simpler Loss (`1 - P`) | **NLL Loss (`-log(P)`)** |
+| :---------------------------------- | :--------------------- | :----------------------- |
+| 0.99 (Very Confident & Correct)     | 0.01                   | **0.01**                 |
+| 0.50 (Uncertain)                    | 0.50                   | **0.69**                 |
+| 0.10 (Confident & Wrong)            | 0.90                   | **2.30**                 |
+| 0.01 (Very Confident & Wrong)       | 0.99                   | **4.61**                 |
+| 0.001 (Extremely Confident & Wrong) | 0.999                  | **6.91**                 |
 
-Notice the difference in the last few rows. With the simpler `1 - P` loss, the penalty for being wrong (`0.90`) and *very* wrong (`0.99`) is quite similar.
+Notice the difference in the last few rows. With the simpler `1 - P` loss, the penalty for being wrong (`0.90`) and _very_ wrong (`0.99`) is quite similar.
 
-The **Negative Log-Likelihood**, however, *explodes* towards infinity as the probability approaches zero. It **aggressively penalizes** the model for being both confident and wrong. This creates a much stronger "error signal" (a steeper gradient) that forces the model to correct its biggest mistakes, leading to faster and more stable training. In information theory, `-log(P)` is a measure of "surprisal" — a highly improbable event is very surprising and contains a lot of information for the model to learn from.
+The **Negative Log-Likelihood**, however, _explodes_ towards infinity as the probability approaches zero. It **aggressively penalizes** the model for being both confident and wrong. This creates a much stronger "error signal" (a steeper gradient) that forces the model to correct its biggest mistakes, leading to faster and more stable training. In information theory, `-log(P)` is a measure of "surprisal" — a highly improbable event is very surprising and contains a lot of information for the model to learn from.
 
 #### Step-by-Step Calculation with Our Example
 
@@ -198,24 +201,25 @@ This leads us to our first, naive hypothesis for the reward function.
 
 This hypothesis translates into the following mathematical formula for our score, `r`:
 
-$$ r(x, y) = \log \pi_{\theta}(y|x) $$
+$$ r(x, y) = \log \pi\_{\theta}(y|x) $$
 
 Let's break this down. The probability of an entire sequence `y` (which consists of tokens $y_1, y_2, ..., y_N$) is the product of the probabilities of generating each token one by one:
 
-$$ \pi_{\theta}(y|x) = \pi_{\theta}(y_1|x) \times \pi_{\theta}(y_2|x, y_1) \times \dots \times \pi_{\theta}(y_N|x, y_{<N}) $$
+$$ \pi*{\theta}(y|x) = \pi*{\theta}(y*1|x) \times \pi*{\theta}(y*2|x, y_1) \times \dots \times \pi*{\theta}(y*N|x, y*{<N}) $$
 
 Multiplying many small probabilities together is numerically unstable in a computer. To fix this, we work in log space, where products become simple sums:
 
-$$ r(x, y) = \log \pi_{\theta}(y|x) = \sum_{t=1}^{N} \log \pi_{\theta}(y_t | x, y_{<t}) $$
+$$ r(x, y) = \log \pi*{\theta}(y|x) = \sum*{t=1}^{N} \log \pi*{\theta}(y_t | x, y*{<t}) $$
 
-*   **What this means:** The total score of a response is the **sum** of the log-probabilities of each of its individual tokens.
+- **What this means:** The total score of a response is the **sum** of the log-probabilities of each of its individual tokens.
 
 Let's make this concrete with a simple example:
 
-*   **Prompt `x`:** "The capital of France"
-*   **Response `y`:** " is Paris"
+- **Prompt `x`:** "The capital of France"
+- **Response `y`:** " is Paris"
 
 The model calculates the score in two steps:
+
 1.  Given the context "The capital of France", it calculates the log-probability of the next token being " is". Let's say it's `-0.2`.
 2.  Given the context "The capital of France is", it calculates the log-probability of the next token being "Paris". Let's say it's `-0.3`.
 
@@ -238,7 +242,7 @@ When you give a language model a sequence of input tokens, it performs a single 
 
 1.  **Input:** A sequence of token IDs, e.g., `input_ids = [1, 2, 3, 4]` ("The capital of France").
 2.  **Model Forward Pass:** The model processes these IDs and outputs `logits`.
-3.  **Logits:** This is a large tensor of raw, unnormalized scores. Its shape is typically `(batch_size, sequence_length, vocab_size)`. For our input, the shape would be `(1, 4, 50257)` if we use a GPT-2 sized vocabulary. The key part is the last logit vector, `logits[0, -1, :]`, which contains a score for every single word in the vocabulary for being the *next* token.
+3.  **Logits:** This is a large tensor of raw, unnormalized scores. Its shape is typically `(batch_size, sequence_length, vocab_size)`. For our input, the shape would be `(1, 4, 50257)` if we use a GPT-2 sized vocabulary. The key part is the last logit vector, `logits[0, -1, :]`, which contains a score for every single word in the vocabulary for being the _next_ token.
 4.  **Probabilities:** To turn these raw scores into probabilities, we apply the **softmax function**.
 
 ```python
@@ -254,7 +258,8 @@ probabilities = F.softmax(mock_logits, dim=-1)
 print(f"Probabilities: {probabilities.numpy()}")
 # Output: Probabilities: [0.045... 0.819... 0.061... 0.049...]
 ```
-During generation, the model would *sample* from this probability distribution to pick the next token. But for DPO, we don't want to sample. We already have the response. We just need to find the probability the model assigned to the specific tokens that were *actually in that response*.
+
+During generation, the model would _sample_ from this probability distribution to pick the next token. But for DPO, we don't want to sample. We already have the response. We just need to find the probability the model assigned to the specific tokens that were _actually in that response_.
 
 #### The `get_sequence_log_probs` Function
 
@@ -294,10 +299,12 @@ def get_sequence_log_probs(model, prompt_tokens, response_tokens):
 #### A Concrete Example: "is Paris"
 
 Let's trace this function with a real example to see exactly what's happening.
-*   **Prompt `x`:** "The capital of France"
-*   **Response `y`:** " is Paris"
+
+- **Prompt `x`:** "The capital of France"
+- **Response `y`:** " is Paris"
 
 First, we need our tokenized inputs.
+
 ```python
 # Assume a simple tokenizer
 # vocab: {"The":1, "capital":2, "of":3, "France":4, " is":5, "Paris":6, "Lyon":7}
@@ -310,14 +317,16 @@ response = torch.tensor([[5, 6]])          # Shape: (1, 2)
 Now, let's trace the execution of `get_sequence_log_probs(policy_model, prompt, response)`.
 
 **Step 1-3: Get `response_logits`**
-*   `input_ids` becomes `[1, 2, 3, 4, 5, 6]` ("The capital of France is Paris").
-*   The model outputs `logits` of shape `(1, 6, vocab_size)`.
-*   `prompt_len` is 4.
-*   We slice the logits at `[:, 3:5, :]`. This gives us the logits from two positions:
-    1.  The prediction after the context `...France` (at index 3).
-    2.  The prediction after the context `...France is` (at index 4).
+
+- `input_ids` becomes `[1, 2, 3, 4, 5, 6]` ("The capital of France is Paris").
+- The model outputs `logits` of shape `(1, 6, vocab_size)`.
+- `prompt_len` is 4.
+- We slice the logits at `[:, 3:5, :]`. This gives us the logits from two positions:
+  1.  The prediction after the context `...France` (at index 3).
+  2.  The prediction after the context `...France is` (at index 4).
 
 Let's assume the relevant mock logits (for tokens 5, 6, 7) from these two positions are:
+
 ```
 # Logits from context "...France":  Scores for [" is", "Paris", "Lyon"] -> [3.0, 0.5, 0.2]
 # Logits from context "...France is": Scores for [" is", "Paris", "Lyon"] -> [0.1, 4.0, 1.0]
@@ -326,13 +335,14 @@ Let's assume the relevant mock logits (for tokens 5, 6, 7) from these two positi
 **Step 4 & 5: Calculating `token_log_probs`**
 The code converts these logits to log-probabilities and then uses `gather` to pick out the ones corresponding to our target tokens (`[5, 6]`).
 
-| Context | Target Token | Logits `[5,6,7]` | Log-Probs `[5,6,7]` | Gathered `log P(token)` |
-| :--- | :--- | :--- | :--- |:--- |
-| "... France" | `is` (idx 5) | `[3.0, 0.5, 0.2]` | `[-0.23, -2.73, -3.03]` | **-0.23** |
-| "... France is" | `Paris` (idx 6)| `[0.1, 4.0, 1.0]` | `[-4.08, -0.18, -3.18]` | **-0.18** |
+| Context         | Target Token    | Logits `[5,6,7]`  | Log-Probs `[5,6,7]`     | Gathered `log P(token)` |
+| :-------------- | :-------------- | :---------------- | :---------------------- | :---------------------- |
+| "... France"    | `is` (idx 5)    | `[3.0, 0.5, 0.2]` | `[-0.23, -2.73, -3.03]` | **-0.23**               |
+| "... France is" | `Paris` (idx 6) | `[0.1, 4.0, 1.0]` | `[-4.08, -0.18, -3.18]` | **-0.18**               |
 
 **Step 6: Summing to get the final score**
-*   Final Score $r = (-0.23) + (-0.18) = \mathbf{-0.41}$
+
+- Final Score $r = (-0.23) + (-0.18) = \mathbf{-0.41}$
 
 We have successfully built a function that implements our naive reward. It takes a prompt and response and returns a single score. On the surface, this seems perfect. We can now get a score for both the winning and losing responses, plug them into our preference loss function from Chapter 3, and start training.
 
@@ -356,23 +366,26 @@ This creates a severe bias against longer, more detailed, and often more helpful
 
 Let's consider a preference pair where the human chose the more verbose answer.
 
-*   **Prompt `x`:** "What is DPO?"
-*   **Winner `y_w` (Helpful, 7 tokens):** "An algorithm for aligning language models"
-*   **Loser `y_l` (Terse, 2 tokens):** "An algorithm"
+- **Prompt `x`:** "What is DPO?"
+- **Winner `y_w` (Helpful, 7 tokens):** "An algorithm for aligning language models"
+- **Loser `y_l` (Terse, 2 tokens):** "An algorithm"
 
 Let's assume our policy model, $\pi_{\theta}$, is reasonably good. It's confident in all these tokens, assigning each a high probability of 0.9, which has a log-probability of approximately **-0.105**.
 
 **Calculating the Naive Score for the Terse Loser (`y_l`)**
 This response has 2 tokens.
-*   Total Score $r_l = 2 \times (-0.105) = \mathbf{-0.21}$
+
+- Total Score $r_l = 2 \times (-0.105) = \mathbf{-0.21}$
 
 **Calculating the Naive Score for the Helpful Winner (`y_w`)**
 This response has 7 tokens.
-*   Total Score $r_w = 7 \times (-0.105) = \mathbf{-0.735}$
+
+- Total Score $r_w = 7 \times (-0.105) = \mathbf{-0.735}$
 
 Now, let's compare the scores our naive reward function has produced:
-*   Score of (Preferred) Winner `r_w`: **-0.735**
-*   Score of (Rejected) Loser `r_l`: **-0.21**
+
+- Score of (Preferred) Winner `r_w`: **-0.735**
+- Score of (Rejected) Loser `r_l`: **-0.21**
 
 The result is a disaster. Since `-0.21 > -0.735`, our reward function has assigned a **higher score to the worse answer**. If we train our model using this objective, it will learn a clear lesson: **shorter is better**. The model's outputs will become terse and unhelpful, directly contradicting the human feedback, simply to satisfy this flawed mathematical incentive.
 
@@ -388,8 +401,9 @@ Let's do some "gradient budget" accounting. The optimizer must choose between tw
 2.  **Option B (Easy):** Polish what's already known. For example, in the 50,000 places across the dataset where the common token "the" appears, slightly increase its already-high log-probability from -0.05 to -0.04 (a tiny `+0.01` gain per example).
 
 Let's calculate the total "reward" the optimizer gets from each choice:
-*   **Total Gain from Option A (Learning "Paris"):** `10 examples × 1.0 gain/example =` **+10**
-*   **Total Gain from Option B (Polishing "the"):** `50,000 examples × 0.01 gain/example =` **+500**
+
+- **Total Gain from Option A (Learning "Paris"):** `10 examples × 1.0 gain/example =` **+10**
+- **Total Gain from Option B (Polishing "the"):** `50,000 examples × 0.01 gain/example =` **+500**
 
 The optimizer gets **50 times more reward** for making a generic word slightly more probable than for learning a useful fact.
 
@@ -397,16 +411,18 @@ The optimizer gets **50 times more reward** for making a generic word slightly m
 It learns that the optimal strategy to get a high score is to generate text full of high-frequency, statistically "safe" words. The ultimate expression of this is **repetition and filler**.
 
 Consider this preference pair:
-*   **Prompt:** "What are the risks of AI?"
-*   **Winner:** "Some risks include job displacement and algorithmic bias."
-*   **Loser:** "That is a very interesting question."
+
+- **Prompt:** "What are the risks of AI?"
+- **Winner:** "Some risks include job displacement and algorithmic bias."
+- **Loser:** "That is a very interesting question."
 
 The model trained with the naive objective might discover it can get an even higher score than the "winner" by generating something like this:
-*   **Model's Hacked Response:** "It is a fact that it is a fact that it is..."
 
-Why? Because the sequence of tokens `P("It") * P("is") * P("a") * P("fact") * P("that")` might consist of tokens that are individually *extremely* high-probability (`>0.99`), leading to a total sequence log-probability (e.g., `-0.1`) that is much better than the more nuanced, human-preferred answer (e.g., `-1.5`). The model has "hacked" the reward by exploiting this bias. It outputs filler because filler is statistically easy and therefore high-probability.
+- **Model's Hacked Response:** "It is a fact that it is a fact that it is..."
 
-We have now seen that our simple, intuitive reward function is fundamentally broken. It punishes helpful verbosity, leading to **short answers**, and it rewards statistical safety, leading to **repetitive filler**. To fix this, we need a more sophisticated reward function that can measure a response's quality *relative to a stable baseline*. This is the role of the reference model, which we will introduce in the next chapter.
+Why? Because the sequence of tokens `P("It") * P("is") * P("a") * P("fact") * P("that")` might consist of tokens that are individually _extremely_ high-probability (`>0.99`), leading to a total sequence log-probability (e.g., `-0.1`) that is much better than the more nuanced, human-preferred answer (e.g., `-1.5`). The model has "hacked" the reward by exploiting this bias. It outputs filler because filler is statistically easy and therefore high-probability.
+
+We have now seen that our simple, intuitive reward function is fundamentally broken. It punishes helpful verbosity, leading to **short answers**, and it rewards statistical safety, leading to **repetitive filler**. To fix this, we need a more sophisticated reward function that can measure a response's quality _relative to a stable baseline_. This is the role of the reference model, which we will introduce in the next chapter.
 
 ## **Chapter 7: The Hero Arrives: The Reference Model**
 
@@ -414,7 +430,7 @@ In the last chapter, our naive reward function crashed and burned. We proved tha
 
 The core problem is that we are measuring an **absolute score**. We need to shift our thinking. Instead of asking, "How good is this response in a vacuum?", we should be asking a much smarter question:
 
-> "How much *better* is this response compared to what my model would have said at the beginning of training?"
+> "How much _better_ is this response compared to what my model would have said at the beginning of training?"
 
 By measuring **relative improvement**, we can build a much more stable and robust reward system. To do this, we need a consistent baseline—a "measuring stick" to compare against.
 
@@ -430,12 +446,12 @@ The entire DPO training lifecycle looks like this:
 graph TD
     A[Pre-trained Base Model] --> B[Supervised Fine-Tuning]
     B --> C[SFT Model is Ready]
-    
+
     subgraph "DPO Training Starts"
         C --> D["Policy Model (π_θ)<br/>Trainable: Its weights are updated."]
         C --> E["Reference Model (π_ref)<br/>Frozen: Its weights NEVER change."]
     end
-    
+
     D --> F(DPO Loss Calculation)
     E --> F
 ```
@@ -451,10 +467,10 @@ The reference model acts as a perfect anchor, a memory of our model's "best self
 
 This is a critical question. Why copy the SFT model? Why not use the original, pre-trained base model as our reference?
 
-| Reference Choice | Feasibility | Why It's a Good/Bad Idea |
-| :--- | :--- | :--- |
-| **Base Model** | **Poor Choice** | The base model is a "parrot" that doesn't understand instructions. Comparing our helpful policy model's response to the base model's nonsensical text completion is like comparing an apple to an engine part. The baseline is too different and provides a meaningless, noisy signal. |
-| **SFT Model** | **Excellent Choice** | The SFT model is our starting point for preference tuning. It already knows how to be a helpful assistant. Using it as a reference ensures we are measuring *how much the policy has improved at following preferences*, relative to an already-strong starting point. It acts as a **guardrail**, preventing the policy from "forgetting" its SFT training in pursuit of a high preference score. |
+| Reference Choice | Feasibility          | Why It's a Good/Bad Idea                                                                                                                                                                                                                                                                                                                                                                           |
+| :--------------- | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Base Model**   | **Poor Choice**      | The base model is a "parrot" that doesn't understand instructions. Comparing our helpful policy model's response to the base model's nonsensical text completion is like comparing an apple to an engine part. The baseline is too different and provides a meaningless, noisy signal.                                                                                                             |
+| **SFT Model**    | **Excellent Choice** | The SFT model is our starting point for preference tuning. It already knows how to be a helpful assistant. Using it as a reference ensures we are measuring _how much the policy has improved at following preferences_, relative to an already-strong starting point. It acts as a **guardrail**, preventing the policy from "forgetting" its SFT training in pursuit of a high preference score. |
 
 Using the SFT model as the reference keeps the DPO training process grounded. The goal isn't just to satisfy preferences, but to do so while remaining a helpful, instruction-following assistant.
 
@@ -462,56 +478,57 @@ Using the SFT model as the reference keeps the DPO training process grounded. Th
 
 With our reference model in place, we can define our new, robust reward function. The score of a response is no longer its raw log-probability. Instead, it is the **scaled difference between the policy and reference model log-probabilities.**
 
-$$ r(x, y) = \beta \left( \log \pi_{\theta}(y|x) - \log \pi_{\text{ref}}(y|x) \right) $$
+$$ r(x, y) = \beta \left( \log \pi*{\theta}(y|x) - \log \pi*{\text{ref}}(y|x) \right) $$
 
 Let's break this down:
-*   $\log \pi_{\theta}(y|x)$: The log-probability of the response from our trainable **policy model**.
-*   $\log \pi_{\text{ref}}(y|x)$: The log-probability of the *same response* from our frozen **reference model**.
-*   The difference $(\dots - \dots)$: This measures the **relative improvement** or *divergence* of the policy from its SFT starting point. A response only gets a high score if the policy finds it significantly *more* probable than the reference model did.
-*   $\beta$ (beta): This is a hyperparameter (typically a small number like 0.1) that acts like a knob. It controls how much we penalize the policy for straying too far from the reference model. It's a safety brake that keeps the policy from becoming too different from its well-behaved SFT version.
+
+- $\log \pi_{\theta}(y|x)$: The log-probability of the response from our trainable **policy model**.
+- $\log \pi_{\text{ref}}(y|x)$: The log-probability of the _same response_ from our frozen **reference model**.
+- The difference $(\dots - \dots)$: This measures the **relative improvement** or _divergence_ of the policy from its SFT starting point. A response only gets a high score if the policy finds it significantly _more_ probable than the reference model did.
+- $\beta$ (beta): This is a hyperparameter (typically a small number like 0.1) that acts like a knob. It controls how much we penalize the policy for straying too far from the reference model. It's a safety brake that keeps the policy from becoming too different from its well-behaved SFT version.
 
 We have now introduced our hero and its powerful new tool. In the next chapter, we will see this robust reward function in action, and watch as it single-handedly defeats the two villains—Length Bias and Bland Prior Bias—that doomed our naive approach.
 
 ## **Chapter 8: How the DPO Reward Solves Everything**
 
-In the last chapter, we introduced our hero: the reference model (`π_ref`). We then crafted a new, robust reward function based on the *relative improvement* of our trainable policy model (`π_θ`) over this frozen baseline.
+In the last chapter, we introduced our hero: the reference model (`π_ref`). We then crafted a new, robust reward function based on the _relative improvement_ of our trainable policy model (`π_θ`) over this frozen baseline.
 
-The DPO Reward: $$ r(x, y) = \beta \left( \log \pi_{\theta}(y|x) - \log \pi_{\text{ref}}(y|x) \right) $$
+The DPO Reward: $$ r(x, y) = \beta \left( \log \pi*{\theta}(y|x) - \log \pi*{\text{ref}}(y|x) \right) $$
 
 Now it's time for the payoff. Let's revisit the two catastrophic failure modes from Chapter 6—the Length Bias and the Bland Prior Bias—and watch as this elegant formula single-handedly solves them both.
 
 #### 1. Solving the Length Bias
 
-*   **The Problem Recap:** The naive reward (raw log-probability) punishes longer responses because summing more negative numbers always results in a lower (worse) score. This incorrectly favored a terse, 2-token response over a helpful, 7-token one.
-*   **The DPO Fix:** The reference model, being a copy of the SFT model, is also a language model. It has the *exact same architectural bias*. The log-probabilities for a long answer will be low for *both* the policy and the reference model. When we take their difference, the bias largely cancels out.
+- **The Problem Recap:** The naive reward (raw log-probability) punishes longer responses because summing more negative numbers always results in a lower (worse) score. This incorrectly favored a terse, 2-token response over a helpful, 7-token one.
+- **The DPO Fix:** The reference model, being a copy of the SFT model, is also a language model. It has the _exact same architectural bias_. The log-probabilities for a long answer will be low for _both_ the policy and the reference model. When we take their difference, the bias largely cancels out.
 
 Let's re-run the numbers from our "What is DPO?" example, now using the DPO reward. We'll set `β = 0.1`.
 
-*   $y_w$ (Helpful Winner, 7 tokens)
-*   $y_l$ (Terse Loser, 2 tokens)
+- $y_w$ (Helpful Winner, 7 tokens)
+- $y_l$ (Terse Loser, 2 tokens)
 
 To calculate the DPO reward, we now need log-probabilities from both models. Let's assume the following values:
 
-| Response | `log π_θ` (Policy) | `log π_ref` (Reference) | DPO Reward `β(log π_θ - log π_ref)` |
-| :--- | :--- | :--- | :--- |
-| **$y_w$ (Winner)** | -0.735 | -0.750 | `0.1 * (-0.735 - (-0.750)) = ` **+0.0015** |
-| **$y_l$ (Loser)** | -0.210 | -0.200 | `0.1 * (-0.210 - (-0.200)) = ` **-0.0010** |
+| Response           | `log π_θ` (Policy) | `log π_ref` (Reference) | DPO Reward `β(log π_θ - log π_ref)`        |
+| :----------------- | :----------------- | :---------------------- | :----------------------------------------- |
+| **$y_w$ (Winner)** | -0.735             | -0.750                  | `0.1 * (-0.735 - (-0.750)) = ` **+0.0015** |
+| **$y_l$ (Loser)**  | -0.210             | -0.200                  | `0.1 * (-0.210 - (-0.200)) = ` **-0.0010** |
 
 Look at the result! The magic is in the `DPO Reward` column.
 
-Even though the policy's raw log-prob for the winner (`-0.735`) is much lower than for the loser (`-0.210`), its DPO reward is now **positive**, while the loser's is **negative**. The reward now correctly reflects the human preference. The model is properly incentivized to produce the longer, more helpful answer because that's where its *relative improvement* over the reference model is greatest.
+Even though the policy's raw log-prob for the winner (`-0.735`) is much lower than for the loser (`-0.210`), its DPO reward is now **positive**, while the loser's is **negative**. The reward now correctly reflects the human preference. The model is properly incentivized to produce the longer, more helpful answer because that's where its _relative improvement_ over the reference model is greatest.
 
 #### 2. Solving the "Bland Prior" Bias
 
-*   **The Problem Recap:** The naive reward gave a massive return on investment for slightly improving the probability of already-common words (like "the"), encouraging repetitive filler instead of useful facts.
-*   **The DPO Fix:** Common, generic words are already highly probable for the SFT-trained reference model. Therefore, the difference in log-probabilities (`log π_θ - log π_ref`) will be tiny, and the resulting reward will be close to zero. The DPO reward function offers almost no incentive for polishing what's already easy and well-known.
+- **The Problem Recap:** The naive reward gave a massive return on investment for slightly improving the probability of already-common words (like "the"), encouraging repetitive filler instead of useful facts.
+- **The DPO Fix:** Common, generic words are already highly probable for the SFT-trained reference model. Therefore, the difference in log-probabilities (`log π_θ - log π_ref`) will be tiny, and the resulting reward will be close to zero. The DPO reward function offers almost no incentive for polishing what's already easy and well-known.
 
 Let's re-run our "gradient budget" accounting with the DPO reward, again with `β = 0.1`.
 
-| Optimization Target | `log π_θ` (Policy, after small update) | `log π_ref` (Reference, the fixed starting point) | DPO Reward Gain `β * Δ(log_ratio)` |
-| :--- | :--- | :--- | :--- |
-| **Generic word "the"** | -0.0408 (Improved) | -0.0513 (Already High) | `0.1 * ((-0.0408) - (-0.0513)) = ` **+0.00105** |
-| **Specific word "Paris"**| -0.105 (Improved)| -0.916 (Was Low) | `0.1 * ((-0.105) - (-0.916)) = ` **+0.0811** |
+| Optimization Target       | `log π_θ` (Policy, after small update) | `log π_ref` (Reference, the fixed starting point) | DPO Reward Gain `β * Δ(log_ratio)`              |
+| :------------------------ | :------------------------------------- | :------------------------------------------------ | :---------------------------------------------- |
+| **Generic word "the"**    | -0.0408 (Improved)                     | -0.0513 (Already High)                            | `0.1 * ((-0.0408) - (-0.0513)) = ` **+0.00105** |
+| **Specific word "Paris"** | -0.105 (Improved)                      | -0.916 (Was Low)                                  | `0.1 * ((-0.105) - (-0.916)) = ` **+0.0811**    |
 
 The tables have turned completely. The DPO reward for learning the specific, helpful fact ("Paris") is now **~77 times greater** than the reward for polishing the generic word ("the").
 
@@ -528,29 +545,29 @@ This chapter is the grand synthesis. We will see how the preference modeling eng
 Let's quickly recap our building blocks:
 
 1.  **The Preference Model (Chapters 2 & 3):** We learned how to convert a preference between two items with scores `r_winner` and `r_loser` into a trainable loss. This formed the outer shell of our algorithm.
-    $$ \mathcal{L} = -\log(\sigma(r_{\text{winner}} - r_{\text{loser}})) $$
+    $$ \mathcal{L} = -\log(\sigma(r*{\text{winner}} - r*{\text{loser}})) $$
 
 2.  **The Robust LLM Reward (Chapters 7 & 8):** We developed a reference-aware reward function that correctly scores an LLM's response `y` by measuring its improvement over a frozen baseline `π_ref`.
-    $$ r(x, y) = \beta \left( \log \pi_{\theta}(y|x) - \log \pi_{\text{ref}}(y|x) \right) $$
+    $$ r(x, y) = \beta \left( \log \pi*{\theta}(y|x) - \log \pi*{\text{ref}}(y|x) \right) $$
 
 Now, we perform the final step: we **substitute** our robust LLM reward function into the preference model's loss function.
 
 #### The Final Formula, Step-by-Step
 
 Let's start with the core of the preference loss, which is the difference in scores:
-$$ r_{\text{winner}} - r_{\text{loser}} $$
+$$ r*{\text{winner}} - r*{\text{loser}} $$
 
 Now, let's replace `r_winner` with the full DPO reward for the winning response, `y_w`, and `r_loser` with the reward for the losing response, `y_l`:
 
-$$ \underbrace{\beta \left( \log \pi_{\theta}(y_w|x) - \log \pi_{\text{ref}}(y_w|x) \right)}_{\text{Score for the Winner}} - \underbrace{\beta \left( \log \pi_{\theta}(y_l|x) - \log \pi_{\text{ref}}(y_l|x) \right)}_{\text{Score for the Loser}} $$
+$$ \underbrace{\beta \left( \log \pi*{\theta}(y_w|x) - \log \pi*{\text{ref}}(y*w|x) \right)}*{\text{Score for the Winner}} - \underbrace{\beta \left( \log \pi*{\theta}(y_l|x) - \log \pi*{\text{ref}}(y*l|x) \right)}*{\text{Score for the Loser}} $$
 
 For convenience, we can factor out the `β` and rearrange the terms:
 
-$$ \beta \left( \left( \log \pi_{\theta}(y_w|x) - \log \pi_{\text{ref}}(y_w|x) \right) - \left( \log \pi_{\theta}(y_l|x) - \log \pi_{\text{ref}}(y_l|x) \right) \right) $$
+$$ \beta \left( \left( \log \pi*{\theta}(y_w|x) - \log \pi*{\text{ref}}(y*w|x) \right) - \left( \log \pi*{\theta}(y*l|x) - \log \pi*{\text{ref}}(y_l|x) \right) \right) $$
 
 Finally, we plug this entire expression back into our original loss function from Chapter 3:
 
-$$ \mathcal{L}_{\text{DPO}} = -\log \sigma \left( \beta \left( \left( \log \pi_{\theta}(y_w|x) - \log \pi_{\text{ref}}(y_w|x) \right) - \left( \log \pi_{\theta}(y_l|x) - \log \pi_{\text{ref}}(y_l|x) \right) \right) \right) $$
+$$ \mathcal{L}_{\text{DPO}} = -\log \sigma \left( \beta \left( \left( \log \pi_{\theta}(y*w|x) - \log \pi*{\text{ref}}(y*w|x) \right) - \left( \log \pi*{\theta}(y*l|x) - \log \pi*{\text{ref}}(y_l|x) \right) \right) \right) $$
 
 This is the final DPO loss function. It might look complex, but you now understand the origin and purpose of every single component.
 
@@ -574,7 +591,7 @@ The core of the implementation is a function that takes a batch of preference da
 import torch
 import torch.nn.functional as F
 # We assume our function from Chapter 5 is available
-# from chapter5 import get_sequence_log_probs 
+# from chapter5 import get_sequence_log_probs
 
 def dpo_training_step(policy_model, ref_model, optimizer, batch, beta=0.1):
     """
@@ -600,7 +617,7 @@ def dpo_training_step(policy_model, ref_model, optimizer, batch, beta=0.1):
     # r_rejected = beta * (log_pi_rejected - log_ref_rejected)
     chosen_rewards = beta * (pi_chosen_logps - ref_chosen_logps)
     rejected_rewards = beta * (pi_rejected_logps - ref_rejected_logps)
-    
+
     # --- 4. Calculate the final loss ---
     # This is -log_sigmoid(r_chosen - r_rejected)
     loss = -F.logsigmoid(chosen_rewards - rejected_rewards).mean()
@@ -618,26 +635,26 @@ def dpo_training_step(policy_model, ref_model, optimizer, batch, beta=0.1):
 
 Let's trace a single preference pair through this function to see every number come to life. We'll use our familiar example.
 
-*   **Prompt:** "Capital of France?"
-*   **Chosen `y_w`:** " is Paris"
-*   **Rejected `y_l`:** " is Lyon"
-*   **`beta`:** 0.1
+- **Prompt:** "Capital of France?"
+- **Chosen `y_w`:** " is Paris"
+- **Rejected `y_l`:** " is Lyon"
+- **`beta`:** 0.1
 
 **Step 1 & 2: Get Log-Probabilities**
 Our `get_sequence_log_probs` function is called four times. Let's assume it returns the following values. Notice how the policy is more confident in the chosen response than the reference is, and less confident in the rejected one.
 
-| Log-Probability | `pi_logps` (Policy) | `ref_logps` (Reference) |
-| :--- | :--- | :--- |
-| **Chosen (`y_w`)** | -10.0 | -12.0 |
-| **Rejected (`y_l`)**| -15.0 | -14.0 |
+| Log-Probability      | `pi_logps` (Policy) | `ref_logps` (Reference) |
+| :------------------- | :------------------ | :---------------------- |
+| **Chosen (`y_w`)**   | -10.0               | -12.0                   |
+| **Rejected (`y_l`)** | -15.0               | -14.0                   |
 
 **Step 3: Calculate the DPO Rewards**
 The code now calculates the robust DPO reward for both responses.
 
-*   **`chosen_rewards` ($r_w$):**
-    `0.1 * (-10.0 - (-12.0)) = 0.1 * (2.0) = 0.2`
-*   **`rejected_rewards` ($r_l$):**
-    `0.1 * (-15.0 - (-14.0)) = 0.1 * (-1.0) = -0.1`
+- **`chosen_rewards` ($r_w$):**
+  `0.1 * (-10.0 - (-12.0)) = 0.1 * (2.0) = 0.2`
+- **`rejected_rewards` ($r_l$):**
+  `0.1 * (-15.0 - (-14.0)) = 0.1 * (-1.0) = -0.1`
 
 The model's rewards (`0.2` vs `-0.1`) correctly align with the human preference. The `reward_accuracy` for this example is 1.0.
 
@@ -657,20 +674,21 @@ The final scalar loss for this training example is **0.555**.
 
 **Step 5: Backpropagation**
 The `loss.backward()` call will now compute the gradients of this `0.555` loss value with respect to the policy model's parameters. The optimizer will then take a small step to adjust the model's weights in a direction that would have:
-*   Increased `pi_chosen_logps` (e.g., from -10.0 towards -9.9)
-*   Decreased `pi_rejected_logps` (e.g., from -15.0 towards -15.1)
+
+- Increased `pi_chosen_logps` (e.g., from -10.0 towards -9.9)
+- Decreased `pi_rejected_logps` (e.g., from -15.0 towards -15.1)
 
 This change would increase the `reward_difference`, making the `logsigmoid` term less negative, and thus pushing the final `loss` value closer to zero.
 
 Here is a table summarizing the entire data flow for our single example:
 
-| Variable | `chosen` (`y_w`) | `rejected` (`y_l`) | Notes |
-| :--- | :--- | :--- |:--- |
-| `pi_logps` | -10.0 | -15.0 | Differentiable output from policy model |
-| `ref_logps` | -12.0 | -14.0 | Fixed output from reference model |
-| **`rewards` ($r$)** | **0.2** | **-0.1** | `beta * (pi_logps - ref_logps)` |
-| `reward_difference` | \multicolumn{2}{c|}{`0.2 - (-0.1) = 0.3`} | The argument to the loss function |
-| **`loss`** | \multicolumn{2}{c|}{`-F.logsigmoid(0.3) = 0.555`} | Final scalar loss to be minimized |
+| Variable            | `chosen` (`y_w`)  | `rejected` (`y_l`)              | Notes                                   |
+| :------------------ | :---------------- | :------------------------------ | :-------------------------------------- |
+| `pi_logps`          | -10.0             | -15.0                           | Differentiable output from policy model |
+| `ref_logps`         | -12.0             | -14.0                           | Fixed output from reference model       |
+| **`rewards` ($r$)** | **0.2**           | **-0.1**                        | `beta * (pi_logps - ref_logps)`         |
+| `reward_difference` | \multicolumn{2}{c | }{`0.2 - (-0.1) = 0.3`}         | The argument to the loss function       |
+| **`loss`**          | \multicolumn{2}{c | }{`-F.logsigmoid(0.3) = 0.555`} | Final scalar loss to be minimized       |
 
 #### Conclusion: From Preference to Policy
 

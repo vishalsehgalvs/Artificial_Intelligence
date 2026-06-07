@@ -6,7 +6,7 @@ You've mastered how a neural network learns. You've seen the elegant dance of gr
 
 Now we tackle language.
 
-When a model like ChatGPT writes code, explains quantum physics, or composes a sonnet, it seems like magic. Here's the secret: it's the *exact same learning process*, applied relentlessly to one deceptively simple task: **predict the next token.**
+When a model like ChatGPT writes code, explains quantum physics, or composes a sonnet, it seems like magic. Here's the secret: it's the _exact same learning process_, applied relentlessly to one deceptively simple task: **predict the next token.**
 
 In this tutorial, we will deconstruct the GPT-2 pre-training pipeline step by step. You will learn the exact algorithms and mathematics that allow a machine to teach itself from the raw, unlabeled text of the internet. We will build the entire conceptual pipeline, showing you exactly how "The cat sat on the" becomes a prediction for "mat," and how doing this billions of times creates the emergent intelligence you see today.
 
@@ -28,6 +28,7 @@ graph LR
 ```
 
 By the end, you will understand:
+
 1.  **Data Preparation:** How we turn the entire internet into an infinite source of free training examples.
 2.  **The Learning Loop:** How the model makes a prediction, measures its own error, and systematically corrects itself.
 
@@ -41,9 +42,9 @@ You've seen neural networks master tasks through supervised learning. The recipe
 
 But there's a massive bottleneck: getting that labeled training data is painfully expensive and fundamentally limiting. Consider the real-world costs:
 
-*   **Medical Imaging:** Radiologists, who charge hundreds of dollars per hour, are needed to label tumors in MRI scans.
-*   **Legal Documents:** Lawyers, billing even more, are required to classify contracts or find evidence in discovery documents.
-*   **Scientific Research:** PhD researchers can spend months or years meticulously annotating datasets for their experiments.
+- **Medical Imaging:** Radiologists, who charge hundreds of dollars per hour, are needed to label tumors in MRI scans.
+- **Legal Documents:** Lawyers, billing even more, are required to classify contracts or find evidence in discovery documents.
+- **Scientific Research:** PhD researchers can spend months or years meticulously annotating datasets for their experiments.
 
 This creates two fundamental problems:
 
@@ -73,7 +74,7 @@ OUTPUT: A set of (input, output) pairs for training.
 FOR k FROM 1 TO n-1:
   input_sequence = [t_1, ..., t_k]
   target_word = t_{k+1}
-  
+
   ADD (input_sequence, target_word) TO output_set
 
 RETURN output_set
@@ -85,13 +86,13 @@ Let's see this algorithm in action. Take the simple sentence: **"The cat sat on 
 
 The training process doesn't see this sentence just once. It systematically slides a window across it, turning one sentence into a full curriculum.
 
-| | Input Sequence (What the model sees) | Target Output (What it must predict) |
-| :--- | :--- | :--- |
-| **Example 1** | ["The"] | `cat` |
-| **Example 2** | ["The", "cat"] | `sat` |
-| **Example 3** | ["The", "cat", "sat"] | `on` |
-| **Example 4** | ["The", "cat", "sat", "on"] | `the` |
-| **Example 5** | ["The", "cat", "sat", "on", "the"]| `mat` |
+|               | Input Sequence (What the model sees) | Target Output (What it must predict) |
+| :------------ | :----------------------------------- | :----------------------------------- |
+| **Example 1** | ["The"]                              | `cat`                                |
+| **Example 2** | ["The", "cat"]                       | `sat`                                |
+| **Example 3** | ["The", "cat", "sat"]                | `on`                                 |
+| **Example 4** | ["The", "cat", "sat", "on"]          | `the`                                |
+| **Example 5** | ["The", "cat", "sat", "on", "the"]   | `mat`                                |
 
 One sentence just generated five high-quality, perfectly labeled training examples for free.
 
@@ -99,7 +100,7 @@ One sentence just generated five high-quality, perfectly labeled training exampl
 
 At first, this seems too simple. How can guessing the next word teach a model to reason, write code, or explain science?
 
-Because to get *consistently good* at this task across billions of examples, the model is forced to build a deep, internal understanding of the world. Imagine the model is given the following input text and must predict the single next word:
+Because to get _consistently good_ at this task across billions of examples, the model is forced to build a deep, internal understanding of the world. Imagine the model is given the following input text and must predict the single next word:
 
 **"In Paris, the capital of France, the primary language spoken is..."**
 
@@ -116,17 +117,17 @@ The only way for the model to minimize its prediction error across trillions of 
 
 This self-supervised approach caused a paradigm shift in the scale of AI.
 
-| Era | Dataset Example | Size | Parameters | Human Labeling? |
-| :--- | :--- | :--- | :--- | :--- |
-| **Traditional ML** | MNIST Digits | ~60,000 images (Megabytes) | 1-10 Million | **Yes** |
-| **Deep Learning** | ImageNet | 14 Million images (Gigabytes) | 25-150 Million | **Yes** |
-| **GPT-2 Era** | WebText | 40GB of text (~8M pages) | **1.5 Billion** | **No** |
+| Era                | Dataset Example | Size                          | Parameters      | Human Labeling? |
+| :----------------- | :-------------- | :---------------------------- | :-------------- | :-------------- |
+| **Traditional ML** | MNIST Digits    | ~60,000 images (Megabytes)    | 1-10 Million    | **Yes**         |
+| **Deep Learning**  | ImageNet        | 14 Million images (Gigabytes) | 25-150 Million  | **Yes**         |
+| **GPT-2 Era**      | WebText         | 40GB of text (~8M pages)      | **1.5 Billion** | **No**          |
 
 The leap is staggering. A single 2,000-word Wikipedia article is automatically converted into **1,999** individual training examples. Scale that across the 40GB of text GPT-2 was trained on, and you have **billions** of learning opportunities, all for free.
 
 We've solved the data problem by turning the internet into an infinitely large, self-labeling textbook.
 
-Now that we understand the *task*, let's tackle the next critical step: how do we turn these words into numbers our neural network can actually process? This is where we move to **Tokenization**.
+Now that we understand the _task_, let's tackle the next critical step: how do we turn these words into numbers our neural network can actually process? This is where we move to **Tokenization**.
 
 ## **Part 2: Tokenization - Turning Language into LEGO Bricks**
 
@@ -136,16 +137,16 @@ At first glance, this seems simple. Why not just split sentences by spaces? Or g
 
 Consider the sentence: **"The cat quickly jumped."**
 
-*   **Word-level tokenization** would give us: `["The", "cat", "quickly", "jumped."]`
-*   **Character-level tokenization** would give us: `["T", "h", "e", " ", "c", "a", "t", ...]`
+- **Word-level tokenization** would give us: `["The", "cat", "quickly", "jumped."]`
+- **Character-level tokenization** would give us: `["T", "h", "e", " ", "c", "a", "t", ...]`
 
 Both of these simple methods create immediate and severe problems.
 
-| Problem | Word-Level Issues | Character-Level Issues |
-| :--- | :--- | :--- |
-| **Massive Vocabulary** | Is "The" different from "the"? Are "jump", "jumps", and "jumping" all unique words? The vocabulary would need to store every single variation, making it enormous. | Solved. The vocabulary is tiny (A-Z, 0-9, punctuation). |
-| **Unknown Words** | What happens with a new word like "hyper-threading" or a typo like "awesommmme"? The model has no entry for it. This is a critical failure point known as the **Out-of-Vocabulary (OOV)** problem. | Solved. Any word can be constructed from characters. |
-| **Sequence Length** | Sequences are short and manageable. "The cat jumped." is 4 tokens. | **Massive Inefficiency.** A 4-word sentence becomes over 20 tokens. A paragraph becomes thousands. The model must process each character one by one, making learning patterns across long distances slow and difficult. |
+| Problem                | Word-Level Issues                                                                                                                                                                                  | Character-Level Issues                                                                                                                                                                                                  |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Massive Vocabulary** | Is "The" different from "the"? Are "jump", "jumps", and "jumping" all unique words? The vocabulary would need to store every single variation, making it enormous.                                 | Solved. The vocabulary is tiny (A-Z, 0-9, punctuation).                                                                                                                                                                 |
+| **Unknown Words**      | What happens with a new word like "hyper-threading" or a typo like "awesommmme"? The model has no entry for it. This is a critical failure point known as the **Out-of-Vocabulary (OOV)** problem. | Solved. Any word can be constructed from characters.                                                                                                                                                                    |
+| **Sequence Length**    | Sequences are short and manageable. "The cat jumped." is 4 tokens.                                                                                                                                 | **Massive Inefficiency.** A 4-word sentence becomes over 20 tokens. A paragraph becomes thousands. The model must process each character one by one, making learning patterns across long distances slow and difficult. |
 
 We need a solution that gives us the best of both worlds: a manageable vocabulary that can still represent any word without creating absurdly long sequences. Modern language models solve this with a clever technique called **Subword Tokenization**.
 
@@ -155,9 +156,9 @@ The core idea is brilliant: **Don't treat words as the smallest unit.** Instead,
 
 Let's see how a real subword tokenizer might handle our examples:
 
-*   The common word "cat" is treated as a single token: `["cat"]`
-*   The word "quickly" is broken into two common pieces: `["quick", "##ly"]`
-*   The word "jumping" becomes two familiar parts: `["jump", "##ing"]`
+- The common word "cat" is treated as a single token: `["cat"]`
+- The word "quickly" is broken into two common pieces: `["quick", "##ly"]`
+- The word "jumping" becomes two familiar parts: `["jump", "##ing"]`
 
 The `##` is a special symbol that simply means "this token is attached to the previous one." This elegant solution solves all of our earlier problems:
 
@@ -170,14 +171,14 @@ After the text is broken into these subword tokens, the tokenizer looks up each 
 
 Let's imagine a small part of a learned vocabulary:
 
-| Token | Token ID |
-| :--- | :---: |
-| "The" | 5 |
-| "cat" | 8 |
-| "quick" | 73 |
-| "##ly" | 152 |
-| "jump" | 311 |
-| "##ed" | 94 |
+| Token   | Token ID |
+| :------ | :------: |
+| "The"   |    5     |
+| "cat"   |    8     |
+| "quick" |    73    |
+| "##ly"  |   152    |
+| "jump"  |   311    |
+| "##ed"  |    94    |
 
 The full tokenization process for "The cat quickly jumped" would look like this:
 
@@ -187,9 +188,11 @@ The full tokenization process for "The cat quickly jumped" would look like this:
 
 This final list of numbers is what represents our sentence. But these numbers are just labels. ID `73` doesn't have any mathematical relationship to ID `8`. They are just arbitrary pointers.
 
-***
-*A quick clarification: In Part 1, when we said the model predicts the next "word," it's more precise to say it predicts the next **token**. The process is the same, but the model is often working with these subword pieces, not just full words. This allows for a much more flexible and powerful system.*
-***
+---
+
+_A quick clarification: In Part 1, when we said the model predicts the next "word," it's more precise to say it predicts the next **token**. The process is the same, but the model is often working with these subword pieces, not just full words. This allows for a much more flexible and powerful system._
+
+---
 
 #### The Dirty Secret of Tokenization
 
@@ -200,9 +203,10 @@ Why?
 A human sees the word "strawberry"—one complete object where you can easily count three 'r's.
 
 But the model might see three abstract, alien symbols: `[$, %, &]`, where:
-*   `$` means "str"
-*   `%` means "aw"
-*   `&` means "berry"
+
+- `$` means "str"
+- `%` means "aw"
+- `&` means "berry"
 
 Now, imagine someone asks you: "How many 'r's are in `$ % &`?"
 
@@ -233,8 +237,8 @@ After all the complex internal calculations, the model's final layer produces a 
 
 These are just raw numbers. They aren't probabilities yet.
 
-*   They can be positive or negative.
-*   They don't sum to 1.
+- They can be positive or negative.
+- They don't sum to 1.
 
 For example, after seeing "The cat sat on the", the logits might look like this:
 
@@ -245,18 +249,19 @@ To turn these messy logits into clean probabilities, we use a crucial function c
 The Softmax formula is:
 `probability_of_token_i = exponent(logit_i) / sum_of_all_exponentiated_logits`
 
-For each token, we raise *e* to the power of its logit, and then divide that by the sum of all the exponentiated logits. This operation guarantees two things:
+For each token, we raise _e_ to the power of its logit, and then divide that by the sum of all the exponentiated logits. This operation guarantees two things:
+
 1.  Every probability will be between 0 and 1.
 2.  All the probabilities will sum to exactly 100%.
 
 Let's see this in action with our simplified example vocabulary:
 
-| Token | Step 1: Logit Score | Step 2: Exponentiate (e^logit) | Step 3: Divide by Sum (28.32) | Final Probability |
-| :--- | :---: | :---: | :---: | :---: |
-| "mat" | **3.2** | 24.53 | 24.53 / 28.32 | **86.6%** |
-| "rug" | **1.3** | 3.67 | 3.67 / 28.32 | **13.0%** |
-| "moon"| **-2.1**| 0.12 | 0.12 / 28.32 | **0.4%** |
-| **Total**| | **28.32** | | **100%** |
+| Token     | Step 1: Logit Score | Step 2: Exponentiate (e^logit) | Step 3: Divide by Sum (28.32) | Final Probability |
+| :-------- | :-----------------: | :----------------------------: | :---------------------------: | :---------------: |
+| "mat"     |       **3.2**       |             24.53              |         24.53 / 28.32         |     **86.6%**     |
+| "rug"     |       **1.3**       |              3.67              |         3.67 / 28.32          |     **13.0%**     |
+| "moon"    |      **-2.1**       |              0.12              |         0.12 / 28.32          |     **0.4%**      |
+| **Total** |                     |           **28.32**            |                               |     **100%**      |
 
 The model's official prediction is now a clean probability distribution. We've reached the **Output Probabilities** stage in our diagram. Now, what we do with this depends on whether we are training or generating.
 
@@ -269,8 +274,9 @@ During training, we know the correct answer was "mat". Our model assigned an 86.
 We use a loss function called **Cross-Entropy**.
 
 The intuition behind Cross-Entropy is to measure **"surprise."**
-*   If you predict the correct answer with high confidence, you are not surprised (low loss).
-*   If you predict the correct answer with low confidence, you are very surprised (high loss).
+
+- If you predict the correct answer with high confidence, you are not surprised (low loss).
+- If you predict the correct answer with low confidence, you are very surprised (high loss).
 
 The full Cross-Entropy formula looks complex, but for next-token prediction, it simplifies beautifully to:
 
@@ -281,14 +287,14 @@ That's it. We only care about the probability the model assigned to the single r
 Let's calculate it for our two scenarios:
 
 1.  **A Good Prediction:**
-    *   The model assigned **86.6%** to the correct token ("mat").
-    *   Loss = -log(0.866) ≈ **0.14**
-    *   This is a small number, which is good! It tells the network it did a good job.
+    - The model assigned **86.6%** to the correct token ("mat").
+    - Loss = -log(0.866) ≈ **0.14**
+    - This is a small number, which is good! It tells the network it did a good job.
 
 2.  **A Terrible Prediction:**
-    *   Imagine the model had only assigned **1%** to "mat".
-    *   Loss = -log(0.01) ≈ **4.6**
-    *   This is a much larger number, reflecting high surprise and creating a large error signal to drive learning.
+    - Imagine the model had only assigned **1%** to "mat".
+    - Loss = -log(0.01) ≈ **4.6**
+    - This is a much larger number, reflecting high surprise and creating a large error signal to drive learning.
 
 This single loss number is the starting point for backpropagation. When combined with Softmax, the initial gradient (the direction for correction) simplifies to `Predicted_Probability - True_Probability`. This clean, simple error signal flows backward through the entire network, updating billions of weights to make a slightly better prediction next time.
 
@@ -301,6 +307,7 @@ When you actually use ChatGPT or call the OpenAI API, you're not training—you'
 Simply picking the word with the highest probability every time would lead to deterministic, boring, and repetitive text. To create interesting and creative output, the model **samples** from the probability distribution, and we can control this sampling with parameters.
 
 Here is a typical API call:
+
 ```python
 import openai
 
@@ -315,25 +322,27 @@ response = openai.ChatCompletion.create(
 What do these parameters actually do?
 
 **Temperature (Range: 0 to 2)**
-*   **Intuition:** Controls the "creativity" or randomness of the output.
-*   **Mechanism:** It modifies the logits *before* the Softmax function: `adjusted_logits = logits / temperature`.
-    *   `temperature < 1.0` (e.g., 0.5): Divides by a smaller number, making the gap between logits larger. This *sharpens* the probabilities, making the model more confident and deterministic. Good for factual answers.
-    *   `temperature > 1.0` (e.g., 1.5): Divides by a larger number, shrinking the gap between logits. This *flattens* the probabilities, increasing the chance of picking a less likely, more "creative" word.
+
+- **Intuition:** Controls the "creativity" or randomness of the output.
+- **Mechanism:** It modifies the logits _before_ the Softmax function: `adjusted_logits = logits / temperature`.
+  - `temperature < 1.0` (e.g., 0.5): Divides by a smaller number, making the gap between logits larger. This _sharpens_ the probabilities, making the model more confident and deterministic. Good for factual answers.
+  - `temperature > 1.0` (e.g., 1.5): Divides by a larger number, shrinking the gap between logits. This _flattens_ the probabilities, increasing the chance of picking a less likely, more "creative" word.
 
 **Top-p (Nucleus Sampling) (Range: 0 to 1)**
-*   **Intuition:** Controls the diversity of the output by preventing the model from picking truly nonsensical words.
-*   **Mechanism:** Instead of considering all 50,257 tokens, it samples from the smallest possible set of tokens whose cumulative probability exceeds the `top_p` value.
-    *   `top_p = 0.1`: Only sample from the most likely tokens that make up the top 10% of the probability mass. This is very focused and safe.
-    *   `top_p = 0.9`: Sample from a much wider "nucleus" of plausible tokens. This allows for more diversity without considering the garbage tokens in the long tail of the distribution.
+
+- **Intuition:** Controls the diversity of the output by preventing the model from picking truly nonsensical words.
+- **Mechanism:** Instead of considering all 50,257 tokens, it samples from the smallest possible set of tokens whose cumulative probability exceeds the `top_p` value.
+  - `top_p = 0.1`: Only sample from the most likely tokens that make up the top 10% of the probability mass. This is very focused and safe.
+  - `top_p = 0.9`: Sample from a much wider "nucleus" of plausible tokens. This allows for more diversity without considering the garbage tokens in the long tail of the distribution.
 
 Let's see how temperature changes the output for the prompt "The weather today is":
 
-| Token | Base Prob. (temp=1.0) | Prob. at temp=0.5 (Sharper) | Prob. at temp=2.0 (Flatter) |
-| :--- | :---: | :---: | :---: |
-| `sunny` | 40% | **~63%** | ~25% |
-| `cloudy`| 30% | ~28% | ~22% |
-| `rainy` | 20% | ~7% | ~19% |
-| `beautiful`| 10% | ~2% | ~14% |
+| Token       | Base Prob. (temp=1.0) | Prob. at temp=0.5 (Sharper) | Prob. at temp=2.0 (Flatter) |
+| :---------- | :-------------------: | :-------------------------: | :-------------------------: |
+| `sunny`     |          40%          |          **~63%**           |            ~25%             |
+| `cloudy`    |          30%          |            ~28%             |            ~22%             |
+| `rainy`     |          20%          |             ~7%             |            ~19%             |
+| `beautiful` |          10%          |             ~2%             |            ~14%             |
 
 As you can see, lowering the temperature makes "sunny" an almost certain choice. Raising it makes the probabilities more even, giving a creative word like "beautiful" a real chance to be selected.
 
@@ -357,8 +366,8 @@ But our journey isn't over. This pre-trained model is a raw engine of knowledge,
 
 Throughout this tutorial, we've treated the core of the network—the part that turns input tokens into output logits—as a "black box."
 
-*   *How* does the model actually remember the word "Paris" from ten tokens ago to correctly predict "French"?
-*   *How* does it weigh the importance of different words in a sentence to understand the true context?
+- _How_ does the model actually remember the word "Paris" from ten tokens ago to correctly predict "French"?
+- _How_ does it weigh the importance of different words in a sentence to understand the true context?
 
 In the next tutorial, we will finally open that box and explore the revolutionary **Transformer architecture** and its core mechanism: **Self-Attention**. This is the engine that truly understands context, and it's the final piece of the architectural puzzle.
 
@@ -369,8 +378,9 @@ A next-token predictor is not a chatbot. If you give our pre-trained model the p
 How do we turn this powerful but raw model into a helpful assistant that can follow instructions, answer questions, and refuse to perform harmful tasks?
 
 That requires a second, crucial stage called **Post-Training**. This involves techniques like:
-*   **Supervised Fine-Tuning (SFT):** Training the model on a smaller, high-quality dataset of human-written instructions and their ideal responses.
-*   **Reinforcement Learning from Human Feedback (RLHF):** Allowing humans to rank the model's different answers, teaching it what "helpfulness" and "safety" actually mean through trial and error.
+
+- **Supervised Fine-Tuning (SFT):** Training the model on a smaller, high-quality dataset of human-written instructions and their ideal responses.
+- **Reinforcement Learning from Human Feedback (RLHF):** Allowing humans to rank the model's different answers, teaching it what "helpfulness" and "safety" actually mean through trial and error.
 
 This is the process that aligns the model with human values—the topic for a future tutorial.
 
