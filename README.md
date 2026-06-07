@@ -6,7 +6,7 @@
 
 ## What this repo covers
 
-This repo is split into two main parts, plus a collection of standalone deep-dive notes.
+This repo is split into four parts, each one building on the last.
 
 **Part 1 — LangChain, LLMs & Prompt Engineering**
 The fundamentals. What AI models are, how to call them, how to write good prompts, how to get structured output, and how LangChain ties it all together.
@@ -17,8 +17,8 @@ How to connect AI to your own data. Documents, PDFs, embeddings, vector database
 **Part 3 — Tools, AI Agents, Tool Calling, APIs & LangChain** _(in progress)_
 How to give AI models the ability to take action — calling APIs, using tools, and building agents that can plan and execute multi-step tasks on their own. The first mini project (JobSage) is already here.
 
-**Deep-Dive Notes — How LLMs Actually Work**
-A growing set of from-scratch tutorials that explain the core concepts powering modern AI — written like someone is explaining it to a friend, not a textbook. Each one builds real intuition with code examples and plain-English walkthroughs.
+**Part 4 — LLM Training & Alignment**
+How LLMs are actually built — pre-training, fine-tuning, and alignment. Covers everything from supervised fine-tuning to LoRA, RLHF, DPO, quantization, and diffusion models. Written from scratch in plain English with code.
 
 ---
 
@@ -51,23 +51,17 @@ Artificial_Intelligence/
 ├── 03_Tools_Agents_and_APIs/          ← Part 3: tools, agents, tool calling (in progress)
 │   └── JobSage/                       ← mini project: paste a job description, get clean structured data back
 │
-├── README.md                          ← this file
-├── requirements.txt                   ← all Python packages needed
+├── 04_LLM_Training_and_Alignment/     ← Part 4: how LLMs are trained and fine-tuned
+│   ├── pretrain.md       ← how LLM pre-training works (next-token prediction on the internet)
+│   ├── sft.md            ← Supervised Fine-Tuning — how a base model becomes an assistant
+│   ├── lora.md           ← LoRA fine-tuning explained from scratch
+│   ├── rlhf.md           ← RLHF + PPO — the technique that turned GPT into ChatGPT
+│   ├── dpo.md            ← Direct Preference Optimization — a simpler alternative to RLHF
+│   ├── quantization.md   ← quantization from scratch — how models shrink from FP32 to INT4
+│   └── diffusion.md      ← how diffusion models (Stable Diffusion, DALL-E) actually work
 │
-├── transformer.md    ← how the Transformer architecture works, built from scratch
-├── attention.md      ← how attention and QKV work, built from scratch
-├── kv_cache.md       ← what the KV cache is and why it makes inference fast
-├── rope.md           ← Rotary Positional Encoding (RoPE) explained from scratch
-├── nn.md             ← how neural networks actually learn (gradient descent + backprop)
-├── pytorch.md        ← PyTorch from scratch — tensors, training loop, nn.Module
-├── adam.md           ← the Adam optimizer explained from first principles
-├── pretrain.md       ← how LLM pre-training works (next-token prediction on the internet)
-├── lora.md           ← LoRA fine-tuning explained from scratch
-├── sft.md            ← Supervised Fine-Tuning — how a base model becomes an assistant
-├── rlhf.md           ← RLHF + PPO — the technique that turned GPT into ChatGPT
-├── dpo.md            ← Direct Preference Optimization — a simpler alternative to RLHF
-├── quantization.md   ← quantization from scratch — how models shrink from FP32 to INT4
-└── diffusion.md      ← how diffusion models (Stable Diffusion, DALL-E) actually work
+├── README.md                          ← this file
+└── requirements.txt                   ← all Python packages needed
 ```
 
 ---
