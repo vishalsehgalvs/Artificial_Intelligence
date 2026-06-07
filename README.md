@@ -57,6 +57,7 @@ Artificial_Intelligence/
 │   ├── lora.md           ← LoRA fine-tuning explained from scratch
 │   ├── rlhf.md           ← RLHF + PPO — the technique that turned GPT into ChatGPT
 │   ├── dpo.md            ← Direct Preference Optimization — a simpler alternative to RLHF
+│   ├── policy.md         ← Policy Gradients → PPO explained from scratch, with LLM examples
 │   ├── quantization.md   ← quantization from scratch — how models shrink from FP32 to INT4
 │   └── diffusion.md      ← how diffusion models (Stable Diffusion, DALL-E) actually work
 │
