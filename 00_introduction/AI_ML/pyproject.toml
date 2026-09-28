@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "practical-ai-course"
+version = "0.1.0"
+description = "Offline-first educational AI and machine learning exercises"
+requires-python = ">=3.11,<3.13"
+dependencies = ["numpy>=1.26,<3", "scikit-learn>=1.5,<2"]
+
+[project.optional-dependencies]
+course = ["practical-ai-course[deep]", "jupyterlab>=4,<5", "ipykernel>=6,<8", "nbclient>=0.10,<1", "pytest>=8,<10"]
+deep = ["torch>=2.4,<3"]
+agents = ["mcp>=2,<3", "langchain>=1,<2", "langgraph>=1,<2"]
+hosted = ["openai>=2,<4", "anthropic>=0.60,<2", "langsmith>=0.4,<1"]
+
+[tool.setuptools]
+py-modules = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
