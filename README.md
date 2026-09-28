@@ -6,7 +6,10 @@
 
 ## What this repo covers
 
-This repo is split into four parts, each one building on the last.
+This repo is split into an introduction and four parts, each one building on the last.
+
+**Introduction — AI and ML Foundations**
+Start with [AI_ML](00_introduction/AI_ML/README.md) if you want the foundations first. It covers data and loss, classical search, machine learning, neural networks, transformers, retrieval, agents, and practical evaluation through local notebooks and CPU labs.
 
 **Part 1 — LangChain, LLMs & Prompt Engineering**
 The fundamentals. What AI models are, how to call them, how to write good prompts, how to get structured output, and how LangChain ties it all together.
@@ -26,6 +29,9 @@ How LLMs are actually built and made useful. Covers the full journey from pre-tr
 
 ```
 Artificial_Intelligence/
+│
+├── 00_introduction/
+│   └── AI_ML/                         ← AI and ML foundations, labs and notebooks
 │
 ├── 01_LangChain_LLMs_and_Prompts/     ← Part 1: fundamentals
 │   ├── chat_models/                   ← talking to LLMs, memory, personality bots
@@ -68,6 +74,8 @@ Artificial_Intelligence/
 ---
 
 ## Quick Start
+
+For the foundations-first route, open [00_introduction/AI_ML/README.md](00_introduction/AI_ML/README.md) and follow its setup guide before starting Part 1. The introduction course runs its core examples locally and does not require API keys.
 
 ```bash
 # 1. Clone the repo
