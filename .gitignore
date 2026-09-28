@@ -30,6 +30,8 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
+!00_introduction/AI_ML/notebooks/
+!00_introduction/AI_ML/notebooks/**/*.ipynb
 
 # Streamlit
 .streamlit/
