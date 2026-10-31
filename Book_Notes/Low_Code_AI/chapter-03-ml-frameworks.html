@@ -1,0 +1,119 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Low-Code AI | Machine Learning Libraries and Frameworks</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1{font-size:38px}h2{font-size:27px}.source,.meta{color:var(--muted);font-size:12px}.source{display:block;margin:4px 0 12px}.note{overflow-wrap:anywhere}.note h4{color:var(--cyan);margin:12px 0 5px}a{color:var(--cyan)}.chapter-list{padding:0;list-style:none}.chapter-list li{padding:13px 0;border-bottom:1px dashed var(--rule)}.chapter-list strong{display:block}.meta{margin-top:18px}.diagram{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:15px 0}.diagram span{border:1px solid var(--cyan);padding:8px 12px}.diagram b{color:var(--yellow)}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:var(--cyan)}
+@media(max-width:760px){h1{font-size:30px}h2{font-size:23px}}
+@media print{body{font-size:11pt;line-height:1.5}.grid{display:block}.note{margin-bottom:20px;break-inside:avoid}h1{font-size:26pt}h2{font-size:19pt}h3{font-size:14pt}.board{padding:5mm}.source,.meta{font-size:8pt}.section{padding:18px 0}.masthead{margin-bottom:20px}pre{font-size:9pt}}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">Low-Code AI | Chapter 3</div><h1>Machine Learning Libraries and Frameworks</h1><p class="thesis">Choose among no-code AutoML, managed ML services, SQL-based modeling, and open-source Python frameworks according to skill, control, scale, and operational needs.</p><p class="meta">Original study notes based on Gwendolyn Stripling and Michael Abel, First edition, 2023. Book pp. 49-70. Source APIs, services, experiments, and model comparisons reflect the book's publication period. These are explanatory summaries, not verbatim reproductions or a claim that every source detail is retained.</p><nav aria-label="Notes navigation"><a href="index.html">All chapters</a><a href="#topic-1">No-code AutoML and how it works</a><a href="#topic-2">Machine learning as a service</a><a href="#topic-3">Low-code, SQL, and open-source frameworks</a></nav></header><div class="diagram" aria-label="Chapter workflow"><span>Business need</span><b>&rarr;</b><span>AutoML / SQL ML / Python</span><b>&rarr;</b><span>Compare control + cost</span><b>&rarr;</b><span>Validate on held-out data</span></div><section class="section"><h2>Detailed Notes</h2><div class="grid"><article class="note " id="topic-1"><h3>No-code AutoML and how it works</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=65">Source: book pp. 49-61 / PDF p. 65</a><p>Typical AutoML flow: upload a labeled dataset, identify the target, inspect schema/statistics, choose a task objective, define a split/budget, train candidate pipelines, review metrics/attributions, and deploy if it meets requirements.</p><p>Automation can test model families, preprocessing, and hyperparameters. It cannot determine whether the target is appropriate, the split is leakage-free, or a score maps to business value. Inspect class imbalance, label quality, feature availability, and the evaluation set. Understand service quotas, region, pricing, and data handling before upload.</p></article>
+<article class="note yellow" id="topic-2"><h3>Machine learning as a service</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=78">Source: book pp. 62-65 / PDF p. 78</a><p>Managed cloud services provide datasets, training jobs, model registries, endpoints, and monitoring. They reduce infrastructure setup but introduce provider-specific IAM, quotas, formats, costs, and operational dependencies.</p><p>Choose managed services for time-to-value when controls and regional/privacy requirements fit. Keep records of project, dataset, model, endpoint, and deployment versions. Undeploy endpoints when idle if charges continue.</p></article>
+<article class="note cyan" id="topic-3"><h3>Low-code, SQL, and open-source frameworks</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=82">Source: book pp. 66-70 / PDF p. 82</a><p>SQL ML lets analysts use familiar queries for data preparation and model training close to warehouse data. It reduces data movement but depends on supported model types and SQL-specific semantics. BigQuery ML is one example.</p><p>Scikit-learn offers composable preprocessing, estimators, pipelines, and metrics; Keras/TensorFlow supports neural networks; AutoKeras, auto-sklearn, and Auto-PyTorch add automated search at different layers. More abstraction saves code but can reduce transparency/control. Pick the least complex option that can be audited, evaluated, and maintained.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Which steps does AutoML automate, and which remain your responsibility?</li><li>Would SQL ML reduce unnecessary data movement here?</li><li>What controls would require custom code?</li><li>Who owns deployment cost and endpoint cleanup?</li></ol><div class="callout">No-code, low-code, and custom code are points on a control spectrum. Choose based on the problem and constraints, not prestige.</div></section><footer>Source links refer to the supplied PDF. Every contents-page topic is mapped in coverage.md. Consult the book for complete implementations, figures, exercises, citations, and experiment evidence.</footer></main></body></html>
