@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 7 | Finetuning</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 7</div><h1>Finetuning</h1><p class="subtitle">When to change weights, memory math, numerical formats, LoRA, model merging, and training tactics</p><p class="thesis">Fine-tuning is a targeted behavior change, not the default solution to missing information. Establish evaluation and simpler baselines before spending on data and training.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=331">Source: book pp. 307-362 / PDF p. 331</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">Finetuning Overview and When to Use It</a><a href="#section-2">Memory Bottlenecks and Memory Math</a><a href="#section-3">Numerical Representations and Quantization</a><a href="#section-4">Parameter-Efficient Finetuning</a><a href="#section-5">Model Merging and Multi-Task Finetuning</a><a href="#section-6">Finetuning Tactics</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>Finetuning Overview and When to Use It</h2></div><a class="source" href="../AI%20Engineering.pdf#page=332">Source: book pp. 308-319 / PDF p. 332</a><div class="grid"><article class="note "><h3>Transfer learning and training objectives</h3><p>Fine-tuning starts from trained weights and adapts some or all parameters. Transfer learning improves sample efficiency because general capabilities need not be learned again. Continued pre-training uses self-supervised sequences; supervised instruction tuning uses demonstrations; preference tuning uses comparative feedback.</p><p>Choose an objective suited to the task. Infilling trains completion of missing spans; instruction tuning shapes response behavior. A released instruction model has already been adapted, so evaluate its existing behavior before continuing training.</p></article>
+<article class="note yellow"><h3>Reasons to fine-tune and reasons not to</h3><p>Good candidates include consistent domain behavior, output style/schema, niche syntax or SQL dialects, specialized classification, bias mitigation, or distillation into a smaller serving model. Moving repeated examples into weights can shorten prompts, though prompt caching changes the economic comparison.</p><p>Reasons to pause: inadequate evaluation, insufficient trustworthy data, unresolved prompting/retrieval errors, maintenance burden, hosting constraints, or a stronger base model that already solves the task. Fine-tuning can overfit, amplify data defects, or cause catastrophic forgetting of other capabilities. Keep broad regression tests alongside the target task.</p></article>
+<article class="note cyan"><h3>Fine-tuning and RAG solve different gaps</h3><p>RAG chiefly addresses information availability and freshness; fine-tuning chiefly addresses how to perform a task or respond. Weight updates are not a dependable database-update mechanism. A tuned model can still need retrieval, and tuning can improve how it uses retrieved evidence.</p><p>Suggested sequence: evaluate a strong base with good prompts, diagnose whether missing knowledge is the issue, try a simple retrieval baseline if it is, then tune when a persistent behavior gap remains. Compare costs and task quality at each stage. Neither RAG nor fine-tuning is categorically superior.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Memory Bottlenecks and Memory Math</h2></div><a class="source" href="../AI%20Engineering.pdf#page=343">Source: book pp. 319-325 / PDF p. 343</a><div class="grid"><article class="note "><h3>Forward/backward passes and trainable parameters</h3><p>Inference performs forward computation. Training also retains information for gradients, computes a backward pass, and updates parameters with an optimizer. Frozen weights still occupy memory and participate in forward computation, but do not require optimizer updates.</p><div class="equation">Training memory = weights + activations + gradients + optimizer state + runtime overhead<br>Inference memory = weights + activations/workspace + KV cache + runtime overhead</div><p>Activation memory grows with batch size, sequence length, architecture, and implementation. Reducing trainable parameters does not remove every term. Some implementations use higher-precision master weights and optimizer state, which must be included explicitly.</p></article>
+<article class="note yellow"><h3>Worked storage estimate</h3><div class="equation">7 billion weights &times; 2 bytes = 14 GB of weight storage<br>7 billion weights &times; 0.5 bytes = 3.5 GB at ideal 4-bit packing</div><p>These are decimal GB and exclude quantization metadata, caches, activations, and framework overhead. A device with nominal capacity equal to checkpoint size is not enough.</p><p>With Adam-like optimization, a trainable parameter can have a gradient and two optimizer-state values, sometimes held in different precision. Work out each term’s byte width rather than assuming a universal multiplier. PEFT reduces gradient/optimizer storage; activation checkpointing trades recomputation for lower activation storage. Hardware sizing needs workload-level measurement.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Numerical Representations and Quantization</h2></div><a class="source" href="../AI%20Engineering.pdf#page=349">Source: book pp. 325-332 / PDF p. 349</a><div class="grid"><article class="note "><h3>Precision, range, and format compatibility</h3><p>Floating-point formats divide bits among sign, exponent, and significand. More exponent bits provide a wider representable range; more significand bits provide finer precision. FP32 uses 4 bytes; FP16 and BF16 use 2 bytes each, but BF16 preserves a wider range with less fine precision than FP16.</p><p>TF32 is an NVIDIA computation format with reduced mantissa precision, not a promise that all stored tensors use a 32-bit-equivalent effective precision. Loading a checkpoint into the wrong format can overflow or degrade it. Respect the model’s intended dtype and hardware support.</p></article>
+<article class="note yellow"><h3>What to quantize and when</h3><p>Quantization maps values to a lower-bit representation. Weight, activation, gradient, and KV-cache quantization address different bottlenecks. Post-training quantization (PTQ) converts an existing model, often using calibration. Quantization-aware training (QAT) accounts for quantization effects while learning.</p><p>Mixed-precision training keeps sensitive calculations in higher precision while reducing others. Lower bits reduce storage, but speed gains depend on kernel/hardware support and conversion overhead. Measure task accuracy, outliers, and actual latency; aggressively quantized models can fail differently even when average benchmark scores look acceptable.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>Parameter-Efficient Finetuning</h2></div><a class="source" href="../AI%20Engineering.pdf#page=356">Source: book pp. 332-347 / PDF p. 356</a><div class="grid"><article class="note "><h3>Partial fine-tuning, adapters, and soft prompts</h3><p>Partial fine-tuning updates selected original layers. Adapter-based methods add a small set of learnable parameters while freezing most base weights. Soft prompt/prefix approaches learn continuous input or intermediate representations rather than a human-readable hard prompt.</p><p>Fewer trainable parameters reduce update-state memory and can improve data efficiency. They do not automatically reduce the base model’s serving size. Adapter placement, task complexity, base capability, and training data govern results. Some adapters add inference computation; others can be merged.</p></article>
+<article class="note yellow"><h3>LoRA: learn a low-rank weight update</h3><p>For a base matrix W with shape d<sub>out</sub> &times; d<sub>in</sub>, learn B of shape d<sub>out</sub> &times; r and A of shape r &times; d<sub>in</sub>, while W remains frozen.</p><div class="equation">W' = W + (&alpha;/r)BA<br>New trainable parameters = r(d<sub>in</sub> + d<sub>out</sub>)<br>Full matrix parameters = d<sub>in</sub>d<sub>out</sub></div><p><strong>Example:</strong> a 4096 &times; 4096 matrix has 16,777,216 weights. Rank 8 adds 65,536 parameters, about 0.39% of that matrix’s size. LoRA learns the update, not a replacement factorization of W. Rank and target matrices jointly determine capacity and budget.</p></article>
+<article class="note cyan"><h3>LoRA targets, serving, and QLoRA</h3><p>Attention projections are common targets; feedforward projections can also matter. Under a fixed parameter budget, spreading rank across matrices can outperform concentrating it, but validate for the task. Higher rank increases capacity and memory without guaranteeing improvement.</p><p>Merge adapters into a compatible base for a single deployed model without the separate adapter computation, or keep them separate for many customer/task adapters sharing one base. The latter saves storage and switching cost but can add runtime complexity.</p><p><strong>QLoRA</strong> stores frozen base weights in low precision, commonly 4-bit, and trains adapters with suitable compute precision. It further reduces memory but does not mean all activations, gradients, or calculations run in 4 bits. Include dequantization and optimizer/runtime overhead in estimates.</p></article></div></section>
+<section class="section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Model Merging and Multi-Task Finetuning</h2></div><a class="source" href="../AI%20Engineering.pdf#page=371">Source: book pp. 347-357 / PDF p. 371</a><div class="grid"><article class="note "><h3>Multi-task strategies and ensembling</h3><p>Joint training mixes examples for all tasks; sequential tuning is simpler to stage but risks forgetting earlier tasks. Separate specialized models improve isolation but increase serving complexity. Merging aims to combine useful learned behavior into fewer deployed models.</p><p>Ensembling combines outputs from multiple models and pays multiple inference costs. Merging combines parameters or modules. Success requires compatible representations, architectures, and training histories; a simple arithmetic merge is not a universal skill-combination operation.</p></article>
+<article class="note yellow"><h3>Summing, interpolation, task vectors, and pruning</h3><p>Weighted averaging is simple for aligned compatible weights. SLERP interpolates along a spherical path rather than a straight line. Task arithmetic uses the difference between tuned and base weights as a task vector.</p><div class="equation">Task vector &tau;<sub>i</sub> = W<sub>tuned,i</sub> - W<sub>base</sub><br>Candidate merge = W<sub>base</sub> + &Sigma; &lambda;<sub>i</sub>&tau;<sub>i</sub></div><p>TIES/DARE-style methods reduce interference from redundant or conflicting task updates before merging. Such pruning concerns task vectors and does not necessarily shrink the deployed dense model. Evaluate every contributing task and safety behavior after merging.</p></article>
+<article class="note cyan"><h3>Layer stacking and concatenation</h3><p>Layer stacking can combine or upscale depth, followed by additional training to make the result work coherently. Concatenating modules or LoRA factors preserves separate capacity but increases dimensions/rank and may retain much of the original storage/computation cost.</p><p>Merging can be attractive for edge deployment or several related skills, but the apparent convenience does not remove validation. Keep base/adapters, merge recipes, licenses, and evaluation history for reproducibility and rollback.</p></article></div></section>
+<section class="section" id="section-6"><div class="section-heading"><span class="section-number">06</span><h2>Finetuning Tactics</h2></div><a class="source" href="../AI%20Engineering.pdf#page=381">Source: book pp. 357-362 / PDF p. 381</a><div class="grid"><article class="note "><h3>Frameworks, models, and controlled experiments</h3><p>Validate the pipeline on a cheap small model, including saving, checkpoint loading, and evaluation, before launching expensive runs. Establish a strong reference model and then compare smaller candidates to map the quality/cost frontier.</p><p>Managed fine-tuning APIs reduce setup but may restrict data formats, training knobs, model versions, and deployment. Local frameworks give control at the cost of hardware and expertise. Check supported objectives, architecture, dtype, adapter targets, monitoring, and reproducibility.</p></article>
+<article class="note yellow"><h3>Hyperparameters and loss masking</h3><p>Learning rate, schedule, batch size, epochs, and adapter settings determine adaptation. Too-large steps can destroy useful behavior; too-small steps fail to adapt. More epochs can overfit. Larger effective batches smooth updates but require more memory.</p><p>Gradient accumulation combines microbatch gradients to simulate a larger update batch; it reduces peak storage but is not identical to physically parallel processing or all batch-dependent behaviors. Set prompt/response loss weights intentionally: instruction tuning often emphasizes assistant-response tokens, while user/system tokens may be masked or downweighted. Preserve model chat templates and evaluate held-out examples during training.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Is your failure caused by missing information or response behavior?</li><li>Which memory terms remain when the base weights are frozen?</li><li>How many trainable parameters does a LoRA adapter add?</li><li>When would separate adapters beat merged weights operationally?</li><li>How will you detect catastrophic forgetting?</li></ol><div class="callout">The lowest-memory training method is not automatically the best system. Measure target gains, general regressions, data needs, deployment cost, and maintenance together.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
