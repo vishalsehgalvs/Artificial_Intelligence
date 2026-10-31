@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 4 | Evaluate AI Systems</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 4</div><h1>Evaluate AI Systems</h1><p class="subtitle">Application-specific criteria, model selection, benchmarks, and repeatable evaluation pipelines</p><p class="thesis">Select and improve the whole system against your users’ tasks. Public rankings help shortlist models; private, representative evaluations determine whether a configuration is useful enough to deploy.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=183">Source: book pp. 159-210 / PDF p. 183</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">Evaluation Criteria</a><a href="#section-2">Model Selection Workflow</a><a href="#section-3">Model Build Versus Buy</a><a href="#section-4">Navigate Public Benchmarks</a><a href="#section-5">Design Your Evaluation Pipeline</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>Evaluation Criteria</h2></div><a class="source" href="../AI%20Engineering.pdf#page=184">Source: book pp. 160-179 / PDF p. 184</a><div class="grid"><article class="note "><h3>Evaluation-driven development and domain capability</h3><p>Define what success and failure mean before optimizing. Evaluation-driven development focuses investment on applications whose outcomes can be measured. Tie offline quality to business results, recognizing that correlation does not establish causation; product experiments help isolate impact.</p><p><strong>Domain-specific capability</strong> includes code, mathematics, legal reasoning, and other specialized tasks. Use executable checks where possible and carefully designed expert labels elsewhere. Multiple-choice accuracy can be useful but depends on answer format, partial-credit rules, option ordering, and whether the benchmark resembles actual use. Correct code may still be too slow or expensive.</p></article>
+<article class="note yellow"><h3>Generation capability: fluency, coherence, and relevance</h3><p>Fluency concerns natural language quality; coherence concerns logical organization across the response. A fluent response can still be irrelevant, incorrect, or unhelpful. Translation faithfulness and summarization relevance require checking meaning against the source rather than rewarding polished wording.</p><p>Measure attributes separately before deciding how to combine them. An overall average can hide a critical failure: strong writing quality does not compensate for fabricated technical evidence or a privacy violation.</p></article>
+<article class="note cyan"><h3>Local versus global factual consistency</h3><p><strong>Local consistency/faithfulness:</strong> is a claim supported by the supplied context? <strong>Global factuality:</strong> is it correct against trustworthy external knowledge? A source-grounded answer can faithfully repeat a false source, while a true statement may be unsupported by the provided source.</p><p>Decompose responses into checkable claims, retrieve trustworthy evidence, and assess support. SAFE-style workflows illustrate claim-level search and verification. Natural-language inference classifies a premise/hypothesis pair as entailment, contradiction, or neutral. Neutral means insufficient evidence, not automatically false. Absence of found evidence is not evidence of absence. Evaluate retrieval authority as well as relevance.</p></article>
+<article class="note pink"><h3>Safety evaluation</h3><p>Define a harm taxonomy relevant to the product: privacy exposure, harmful content, discriminatory behavior, unsafe instructions, or misinformation. Use moderation/scoring systems and adversarial tests appropriate to the population, language, and domain.</p><p>Measure both unsafe compliance and unnecessary refusal. Refusing legitimate requests can make a system unusable; permissive behavior can expose users to harm. Public toxicity tests are useful baselines, not a substitute for application-specific cases. Record severity and affected groups instead of collapsing every failure into a single equally weighted count.</p></article>
+<article class="note "><h3>Instruction-following capability and role-playing</h3><p>Separate “cannot do the task” from “did not follow the instruction.” Test verifiable constraints: required/forbidden terms, word or paragraph limits, JSON fields, response structure, and combinations of constraints. IFEval-style tests use constraints that can be checked programmatically; other benchmarks use human or AI judgments.</p><p>Role-playing requires the correct voice, background knowledge, and boundaries on knowledge. A character should not reveal facts it could not know or future story spoilers. Evaluate persona consistency across turns and interactions, not only a single convincing introduction.</p></article>
+<article class="note yellow"><h3>Cost and latency as first-class criteria</h3><p>Track total response time, time to first visible token, per-token generation time, and tail percentiles. Multi-step pipelines can hide internal token generation, making user-perceived TTFT much higher than a model’s own TTFT.</p><p>Estimate full request cost: generation, retrieval, embeddings, tools, scoring, retries, storage, and operations. Set hard requirements and desirable targets for the actual workload. Test with realistic input/output lengths and concurrency; advertised per-token prices alone do not describe cost per successful task.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Model Selection Workflow</h2></div><a class="source" href="../AI%20Engineering.pdf#page=203">Source: book pp. 179-181 / PDF p. 203</a><div class="grid"><article class="note "><h3>A practical selection loop</h3><ol><li>Define hard requirements, improvement targets, and permitted deployment options.</li><li>Shortlist using documentation, model cards, licenses, and relevant public evidence.</li><li>Evaluate candidates on private examples; estimate whether prompt, retrieval, or fine-tuning changes can close gaps.</li><li>Deploy cautiously, monitor live outcomes, and revise as evidence changes.</li></ol><p>Hard versus soft depends on control. Unsupported modalities can be hard constraints; latency may be adjustable if you control serving. Do not spend weeks optimizing a model that fundamentally cannot meet the task.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Model Build Versus Buy</h2></div><a class="source" href="../AI%20Engineering.pdf#page=205">Source: book pp. 181-191 / PDF p. 205</a><div class="grid"><article class="note "><h3>Open weights, source, data, and licenses</h3><p>Terminology is inconsistent: available weights do not necessarily imply open training data, unrestricted commercial use, or a reproducible training process. Read the actual license and service terms for fine-tuning, redistribution, output reuse, distillation, and competing services.</p><p>Model ownership and serving ownership are separate decisions. An open-weight model can be accessed through a managed API, while self-hosting requires compute, deployment, security, upgrades, and on-call expertise.</p></article>
+<article class="note yellow"><h3>Seven decision axes</h3><ul><li><strong>Privacy:</strong> residency, retention, access, and whether inputs may be reused.</li><li><strong>Lineage:</strong> source-data rights and contractual/legal responsibilities.</li><li><strong>Performance:</strong> measured task quality and capacity, not marketing claims.</li><li><strong>Functionality:</strong> modalities, context, log probabilities, fine-tuning, tools, guardrails, and structure support.</li><li><strong>Cost:</strong> workload-dependent total ownership, engineering, and utilization.</li><li><strong>Control/access:</strong> rate limits, offline/edge requirements, version freezing, deprecation, and outages.</li><li><strong>Support/transparency:</strong> community, vendor help, debugging access, and change visibility.</li></ul></article>
+<article class="note cyan"><h3>Avoid simplistic hosting assumptions</h3><p>Self-hosting is not automatically cheaper or more private; it transfers responsibility to your team. APIs are not automatically unsafe; evaluate actual agreements, deployment regions, and controls. Public training data is not trivial to audit at foundation-model scale.</p><p>Different providers serving the same nominal model can differ in templates, quantization, runtime, and limits. Switching endpoint providers therefore requires tests. Reassess the trade-off as prices and requirements change.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>Navigate Public Benchmarks</h2></div><a class="source" href="../AI%20Engineering.pdf#page=215">Source: book pp. 191-200 / PDF p. 215</a><div class="grid"><article class="note "><h3>Benchmark selection and aggregation</h3><p>Choose relevant capabilities rather than copying the largest leaderboard. Check what each benchmark measures, its scoring protocol, number and kind of examples, prompt settings, contamination risk, and uncertainty. Examples in the book include MMLU, HumanEval, GSM8K, ARC, HellaSwag, TruthfulQA, WinoGrande, BBH, and IFEval.</p><p>Highly correlated benchmarks can double-count the same ability; aggregation weights change model rankings. Saturated benchmarks provide little discrimination. Compare base and instruction variants under comparable prompts and sampling, and distinguish real capability shifts from formatting or evaluator artifacts.</p></article>
+<article class="note yellow"><h3>Data contamination</h3><p>Public benchmark items can enter web training corpora deliberately or accidentally. Exact/n-gram overlap with training data is direct but requires access and computation; unusually low perplexity is cheaper but weaker evidence. A suspicious score is a reason to investigate, not proof.</p><p>Private holdouts, protected evaluation services, refreshed examples, and clean-versus-full comparisons help. Performance gaps between clean and contaminated items can vary. A public benchmark helps reject weak candidates; your own protected task set is still needed to select the best fit.</p></article></div></section>
+<section class="section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Design Your Evaluation Pipeline</h2></div><a class="source" href="../AI%20Engineering.pdf#page=224">Source: book pp. 200-210 / PDF p. 224</a><div class="grid"><article class="note "><h3>Step 1: Evaluate all components and the task</h3><p>Test retrievers, routers, generators, tool calls, and scorers individually to diagnose defects, then test end-to-end outcomes. A component improvement can worsen the whole system by adding latency or suppressing useful context.</p><p>Distinguish per-turn quality from per-task completion across a conversation. A clarifying question may look incomplete in one turn but be necessary to solve the task. Check downstream effects and final outcomes, including safety, cost, and human effort.</p></article>
+<article class="note yellow"><h3>Step 2: Create guidelines and rubrics</h3><p>Specify desired behaviors, prohibited behaviors, criteria, severity, score meanings, and concrete examples. Have humans apply the rubric and resolve ambiguity before using it to calibrate a model judge. A clear rubric is foundational to both training labels and evaluation labels.</p><p>Relate metrics to meaningful outcomes rather than optimizing proxies blindly. Session length can mean engagement or frustration depending on the product. Optimize business value without ignoring user welfare and risk.</p></article>
+<article class="note cyan"><h3>Step 3: Define methods and evaluation data</h3><p>Combine exact checks, similarity, judges, and experts according to failure mode. Curate real-use examples when allowed and include frequent tasks, edge cases, typos, out-of-scope requests, and known failures. Protect the evaluation set from model training and prompt overfitting.</p><p>Report slices by task, user group, source, or platform. <strong>Simpson’s paradox</strong> can reverse an aggregate ranking when group proportions differ, so preserve comparable distributions. Track label disagreement and quality. Smaller score differences require more samples; sample requirements scale roughly with the inverse square of the effect size under common statistical assumptions.</p></article>
+<article class="note pink"><h3>Evaluate your evaluator and iterate</h3><p>Measure human/judge agreement, reproducibility, variance, criterion correlations, cost, and coverage. Pin configurations and make changes explicit. Use uncertainty intervals and repeated runs when needed.</p><p>New production failures become regression cases. Update criteria when user needs change, but retain evaluation versions so historical comparisons remain interpretable. Keep a minimum viable evaluation suite early; grow it with evidence instead of postponing measurement until launch.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Can an answer be locally faithful but globally false?</li><li>Which requirements are hard constraints for your deployment?</li><li>What can a leaderboard average hide?</li><li>How do per-turn and per-task evaluations differ?</li><li>How would you detect an unreliable judge or a shift in evaluation data?</li></ol><div class="callout">A useful evaluation pipeline is a versioned product asset: it measures what matters, explains failures, and changes deliberately as the system and its users evolve.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
