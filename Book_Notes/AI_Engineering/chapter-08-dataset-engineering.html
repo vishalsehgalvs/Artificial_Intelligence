@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 8 | Dataset Engineering</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 8</div><h1>Dataset Engineering</h1><p class="subtitle">Data quality, diversity, quantity, acquisition, synthesis, distillation, and processing</p><p class="thesis">Design the behavior you want to teach, then build data that demonstrates it. Quality, coverage, quantity, and governance all matter; scaling a flawed dataset usually scales its defects.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=387">Source: book pp. 363-404 / PDF p. 387</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">Data Curation</a><a href="#section-2">Data Acquisition and Annotation</a><a href="#section-3">Data Augmentation and Synthesis</a><a href="#section-4">Model Distillation</a><a href="#section-5">Data Processing</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>Data Curation</h2></div><a class="source" href="../AI%20Engineering.pdf#page=389">Source: book pp. 365-377 / PDF p. 389</a><div class="grid"><article class="note "><h3>Design examples for the intended learning objective</h3><p>A self-supervised example is a sequence; SFT uses a prompt and response; preference tuning uses a prompt with preferred/dispreferred responses; reward-model training may use scores or comparison-derived labels. Reasoning examples can contain worked steps; tool-use examples need tool calls, observations, roles, and destinations.</p><p>Represent multi-turn clarification, failures, recovery, and follow-up when the deployed application needs them. Human interaction traces can differ from efficient model tool use, so demonstrations must teach the model’s actual interface rather than simply mimic human mouse movements.</p></article>
+<article class="note yellow"><h3>Data quality</h3><p>Quality means relevant to the task, aligned with desired behavior, consistently annotated, correctly formatted, sufficiently unique, and compliant. Correctness is crucial where the task demands facts, but appropriateness also depends on audience and use.</p><p>Small curated sets can outperform large noisy sets, as illustrated by LIMA and other studies. This is not a universal sample-count rule. Resolve contradictory annotations and formatting errors; model architecture and compute cannot compensate indefinitely for poor supervision. Clear guidelines are part of the dataset, not optional paperwork.</p></article>
+<article class="note cyan"><h3>Data coverage and mixtures</h3><p>Cover tasks, topics, languages, dialects, input length, output formats, typos, conversation turns, and important rare cases. Quality and diversity complement each other; a polished set of near-identical examples is still narrow.</p><p>Pre-training, SFT, and preference phases can need different domain mixtures. The book’s Llama examples show different proportions of general knowledge, math/reasoning, code, and multilingual data; those are observations, not recommended ratios for every application. Small-model experiments and learning curves can inform mixture choices. High-quality math/code annealing is an example of targeted late training, not proof that all tasks need the same data.</p></article>
+<article class="note pink"><h3>Data quantity and diminishing returns</h3><p>Needs depend on task difficulty, method, base-model capability, and example quality. A capable base with PEFT may be attractive with little data; abundant data can make a smaller fully tuned model competitive. Treat these as hypotheses to evaluate, not hard thresholds.</p><p>Begin with a small curated pilot, often tens to hundreds of examples, and inspect held-out gains. If the pilot fails, diagnose labels, formatting, hyperparameters, model suitability, and evaluation before scaling. Plot performance versus sample count to estimate marginal value. Staged learning can use broad/raw data before task-specific data or synthetic before real data. Ossification describes limits to adapting some overtrained/small models; poor adaptation is not always fixed by adding examples.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Data Acquisition and Annotation</h2></div><a class="source" href="../AI%20Engineering.pdf#page=401">Source: book pp. 377-380 / PDF p. 401</a><div class="grid"><article class="note "><h3>Sources, annotation budgets, and the data flywheel</h3><p>Sources include public datasets, licensed sources, user-approved application interactions, system traces, and explicit/implicit feedback. Application data often best matches the real task, but collection needs consent, privacy safeguards, retention rules, and access controls.</p><p>Check provenance and source rights even when a dataset has a permissive top-level license. Plan annotation cost from sample counts, expert rates, repeat labeling, adjudication, and quality review. A data flywheel is useful only when collected signals reliably improve the product, not just because more interactions are stored.</p></article>
+<article class="note yellow"><h3>Clear annotation guidelines</h3><p>Define what deserves each score, how to handle ambiguity, correctness versus helpfulness, unsafe/out-of-scope requests, and edge cases. Give concrete examples and train annotators. Compare independent labels, resolve disagreement, and revise the guide.</p><p>AI annotation needs the same clarity as human annotation. Public data hubs help discovery, but all candidate datasets need inspection for relevance, bias, quality, duplicates, and licensing.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Data Augmentation and Synthesis</h2></div><a class="source" href="../AI%20Engineering.pdf#page=404">Source: book pp. 380-395 / PDF p. 404</a><div class="grid"><article class="note "><h3>Why synthesize? Traditional techniques</h3><p>Augmentation transforms existing examples; synthesis creates new examples approximating desired properties. Goals include scale, sparse-case coverage, controlled quality, privacy-aware development, testing, and distillation.</p><p>Traditional methods include templates with controlled/random fields, transformations such as paraphrases or image crops, and perturbations for robustness. Preserve labels and semantics. Simulators generate safe, repeatable trajectories for robotics, driving, or tool use; choose successful validated actions as demonstrations. Simulation coverage and realism matter as much as volume.</p></article>
+<article class="note yellow"><h3>AI-powered data synthesis and instruction data</h3><p>Generate instructions from topics/templates/seeds and produce candidate responses. Paraphrasing, translation, and controlled variations can expand coverage. Reverse instruction starts with high-quality authorized content and asks for a matching prompt, avoiding the need to fabricate the long answer itself.</p><p>Book examples include UltraChat’s topic expansion, Alpaca’s seed-driven instructions, and MetaMath-style mathematical variations. These demonstrate construction strategies, not permanent model rankings. Track the generator, prompt, source content, and filters. Iterative self-improvement needs independent evaluation to avoid reinforcing the generator’s mistakes.</p></article>
+<article class="note cyan"><h3>Long-context, code, preference, and back-translation workflows</h3><p><strong>Long context:</strong> generate verified QA pairs from manageable document chunks, then train with the same question and full document to teach locating evidence in longer inputs. Ensure the model/runtime supports the longer sequence; data alone does not remove architectural limits.</p><p><strong>Code:</strong> generate problems, solutions, tests, and fixes using execution feedback; translate corrected programs across languages and test each version. The book describes millions of Llama code examples constructed this way.</p><p><strong>Back-translation:</strong> translate text or code into an explanation and back, checking preserved meaning/function rather than identical wording. <strong>Preference data:</strong> generate several responses and judge them, swapping order to reduce position bias.</p></article>
+<article class="note pink"><h3>Data verification and limitations</h3><p>Prefer functional tests and deterministic constraints where possible; otherwise combine rubric-based judges, heuristics, and expert review. Check instruction feasibility, factual support, repetition, contradictory targets, length, and topic coverage. AI-content detectors can flag distribution differences, but fooling a detector is not proof of quality.</p><p>Risks include superficial imitation, hallucinated teacher knowledge, biased samples, obscured lineage, and recursive <strong>model collapse</strong>: frequent patterns dominate while tails disappear. Mix trusted real data, preserve rare categories, and evaluate on independent real use. Recursion does not inevitably fail in every setting; results depend on data retention, selection, and verification.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>Model Distillation</h2></div><a class="source" href="../AI%20Engineering.pdf#page=419">Source: book pp. 395-396 / PDF p. 419</a><div class="grid"><article class="note "><h3>Teacher-to-student transfer</h3><p>Distillation trains a student to reproduce useful teacher behavior, through teacher outputs and sometimes richer probability signals when available. It can reduce serving cost for a specific task while retaining enough capability.</p><p>A teacher need not always have more total parameters; task expertise, model architecture, and the teaching objective matter. Not all synthetic-data training is distillation. Measure the student’s actual generalization, cost, and regressions, and confirm the teacher’s license permits using outputs to train another model.</p></article></div></section>
+<section class="section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Data Processing</h2></div><a class="source" href="../AI%20Engineering.pdf#page=420">Source: book pp. 396-404 / PDF p. 420</a><div class="grid"><article class="note "><h3>Inspect data before automating it</h3><p>Read representative examples and inspect distributions of tasks, topics, prompt/response lengths, languages, annotation scores, and sources. Compare annotators and score distributions; resolve conflicts rather than blindly averaging.</p><p>Manual inspection often reveals defects invisible in aggregate statistics. Optimize processing pipelines for large sets, cache expensive intermediate representations, and order cheap filters before expensive verification when practical. Keep reproducible transformation records and counts.</p></article>
+<article class="note yellow"><h3>Deduplicate data</h3><p>Look for whole-document, within-document, and cross-document repetition, plus exact, lexical near-duplicates, and semantic near-duplicates. Check train/evaluation overlap separately to protect measurement integrity. Repetition can distort learning and waste compute.</p><p>All-pairs checks scale quadratically. Hash exact records; use n-grams, MinHash/LSH or related bucketing for candidates, and embeddings/similarity for semantic duplicates. Bloom filters support efficient membership checks with false positives. Reduced dimensions can speed comparisons but lose signal. Review thresholds to avoid erasing legitimate recurring patterns or minority examples.</p></article>
+<article class="note cyan"><h3>Clean, filter, and format</h3><p>Remove irrelevant markup and corrupted data while preserving structures the task needs, such as code or meaningful tables. Filter unsafe, private, unusable, and poorly aligned examples under explicit rules; importance sampling and active learning can prioritize valuable cases.</p><p>Match the target model’s chat template, role boundaries, delimiters, and loss masks. Fine-tuning can shorten inference instructions, but inference format must still match training. Validate examples after formatting and prevent leakage from evaluation data. Keep dataset versions, lineage, and reproducible train/validation splits.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Which behaviors and rare cases must appear in your dataset?</li><li>How would you decide whether more examples are worth labeling?</li><li>What verifies synthetic code or long-context QA?</li><li>Why is a human-like synthetic example not necessarily correct?</li><li>How will you protect evaluation data during deduplication and formatting?</li></ol><div class="callout">Use data engineering to teach specific capabilities, not merely accumulate records. Validate the learning effect on independent examples and preserve provenance throughout.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
