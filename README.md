@@ -2,6 +2,10 @@
 
 > A learning repo for Generative AI and LangChain — notes, working code examples, and mini projects. Everything is written in plain English, no jargon.
 
+## Book Notes
+
+Browse [AI Engineering and Low-Code AI notes](Book_Notes/index.html), including chapter PDFs, HTML notes, and the original selected transcript notes.
+
 ---
 
 ## What this repo covers
