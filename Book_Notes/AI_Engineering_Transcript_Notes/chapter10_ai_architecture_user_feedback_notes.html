@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Detailed whiteboard-style notes on AI application architecture and user feedback.">
+  <title>Chapter 10 | AI Architecture and User Feedback</title>
+  <link rel="stylesheet" href="whiteboard-notes.css">
+</head>
+<body>
+  <main class="board">
+    <header class="masthead">
+      <div class="eyebrow">AI Engineering | Chapter 10</div>
+      <h1>Architecture &amp; User Feedback</h1>
+      <p class="subtitle">Build a reliable path from user request to useful response</p>
+      <p class="thesis">A production AI application is more than a model API call. It needs grounded context, safety controls, model routing, gateways, caches, tool workflows, observability, and a feedback loop that improves the product without amplifying bias.</p>
+      <nav aria-label="Chapter sections">
+        <a href="#baseline">Baseline</a><a href="#context">Context</a><a href="#guardrails">Guardrails</a><a href="#routing">Routing</a><a href="#caching">Caching</a><a href="#agents">Agents</a><a href="#observability">Observability</a><a href="#feedback">Feedback</a>
+      </nav>
+    </header>
+
+    <section class="section" id="baseline">
+      <div class="section-heading"><span class="section-number">01</span><h2>Start with the Simple Architecture</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Baseline request flow</h3>
+          <div class="flow"><div class="step">User query</div><span class="arrow">&rarr;</span><div class="step">Model API</div><span class="arrow">&rarr;</span><div class="step">Foundation model</div><span class="arrow">&rarr;</span><div class="step">Response</div></div>
+          <p>This is a useful starting point for a prototype, but it does not yet manage context, safety, model choice, latency, actions, or production monitoring.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Why production needs more</h3>
+          <ul>
+            <li>A bare prompt may lack facts and encourage unsupported answers.</li>
+            <li>There are no protections for sensitive input or harmful prompts.</li>
+            <li>Complex products may need different models and tools for different requests.</li>
+            <li>Repeated retrieval and generation can add avoidable latency and cost.</li>
+            <li>Some tasks need iterative agent behavior or controlled write actions.</li>
+            <li>Without monitoring and logs, failures and drift are hard to diagnose.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="context">
+      <div class="section-heading"><span class="section-number">02</span><h2>Construct and Ground Context</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Context construction</h3>
+          <p>Context construction supplies the model with relevant information beyond the raw user query. It acts like feature engineering for foundation models: select and shape useful evidence before generation.</p>
+          <p>Common patterns include RAG, query rewriting, conversation history, and tools or agents that retrieve information.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Possible data sources and read actions</h3>
+          <ul>
+            <li>Documents, structured tables, and product records.</li>
+            <li>Conversation history and user-approved memory.</li>
+            <li>Vector search over semantic embeddings.</li>
+            <li>SQL queries for structured data.</li>
+            <li>Web search or other approved retrieval tools.</li>
+          </ul>
+        </article>
+        <article class="note cyan wide">
+          <h3>Grounded request flow</h3>
+          <div class="flow"><div class="step">Query</div><span class="arrow">&rarr;</span><div class="step">Retrieve relevant evidence</div><span class="arrow">&rarr;</span><div class="step">Build prompt with context</div><span class="arrow">&rarr;</span><div class="step">Generate grounded answer</div></div>
+          <p>Grounding can reduce unsupported answers, but the application must still evaluate retrieval relevance, permissions, freshness, and whether the model used the evidence correctly.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="guardrails">
+      <div class="section-heading"><span class="section-number">03</span><h2>Input and Output Guardrails</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Input guardrails</h3>
+          <p>Inspect or transform incoming requests before they reach a model, especially an external API.</p>
+          <ul>
+            <li>Detect and block or redact sensitive personal or company information when policy requires it.</li>
+            <li>Protect against jailbreak attempts and prompt injection.</li>
+            <li>Apply access checks and validate that the request is in scope.</li>
+          </ul>
+        </article>
+        <article class="note yellow">
+          <h3>Masking and unmasking sensitive values</h3>
+          <p>Where policy permits computation on masked data, replace sensitive values locally with opaque tokens and keep a protected token-to-value map. Send only the masked request; restore values only in an authorized local step.</p>
+          <div class="equation">Private value &rarr; local token map &rarr; masked request to model &rarr; controlled local restoration</div>
+          <p class="small">Masking does not replace consent, access control, retention rules, or a review of whether sending transformed data is permitted.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Output guardrails</h3>
+          <ul>
+            <li><strong>Quality:</strong> malformed JSON, invalid schema, unsupported or inconsistent claims.</li>
+            <li><strong>Safety/security:</strong> toxic content, privacy leakage, or disallowed instructions.</li>
+            <li><strong>Refusal behavior:</strong> check both missed refusals and unnecessary false refusals.</li>
+            <li><strong>Actions:</strong> review requests to send messages, update records, or perform consequential operations.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Reliability, latency, and streaming</h3>
+          <p>Guardrails add components to the request path and can increase latency. Output checks may need to inspect multiple tokens or the completed response, which complicates immediate token streaming. Use risk-appropriate checks and clear retry or escalation policies.</p>
+          <p>Human approval may be required for ambiguous or high-impact tool actions.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="routing">
+      <div class="section-heading"><span class="section-number">04</span><h2>Model Router and Gateway</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Router: choose the right path</h3>
+          <p>A router directs a request to an appropriate model, tool, or human path. It can use an intent classifier to understand the request and a next-action predictor to choose among possible steps.</p>
+          <ul>
+            <li>Specialized smaller models may reduce serving cost for narrow tasks.</li>
+            <li>Some requests should be routed to a human or a higher-capability model.</li>
+            <li>Routing may happen before retrieval to determine which data sources and permissions apply.</li>
+          </ul>
+        </article>
+        <article class="note yellow">
+          <h3>Context length is a routing constraint</h3>
+          <p>Context construction can make a short query much longer. A specialized model may be more accurate but have a smaller context window; a larger model may accept the full context but cost more or be less specialized.</p>
+          <p>Choose among trimming, summarizing, retrieving less, or selecting a model with more context based on expected information loss, quality, latency, and cost.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Gateway: one managed interface</h3>
+          <p>A model gateway provides a common interface to self-hosted models and external providers. It centralizes a model catalog, access control, credential handling, usage limits, and cost policies.</p>
+        </article>
+        <article class="note pink">
+          <h3>Gateway operational duties</h3>
+          <ul>
+            <li>Route API requests and normalize provider-specific details.</li>
+            <li>Track usage, budgets, and API limits.</li>
+            <li>Provide fallback behavior when a model or provider fails.</li>
+            <li>Support load balancing, logging, and analytics.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="caching">
+      <div class="section-heading"><span class="section-number">05</span><h2>Caching for Latency and Cost</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Exact cache</h3>
+          <p>Reuse a stored result when the incoming request matches a previously seen request under the cache key. It is precise but misses paraphrases and semantically equivalent queries.</p>
+          <p>Cache retrieval results or responses close to the application for quick access; use appropriate in-memory or low-latency storage.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Semantic cache</h3>
+          <p>Represent queries as embeddings and reuse an answer when a new query is sufficiently similar to a cached query. This can raise the hit rate for paraphrases but may return an inappropriate answer if the threshold, embedding, or context is wrong.</p>
+          <p>Test similarity thresholds against real queries. Semantic cache quality depends on embeddings, vector search, and a reliable similarity metric.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Cache policy choices</h3>
+          <ul>
+            <li><strong>LRU:</strong> evict least recently used items.</li>
+            <li><strong>LFU:</strong> evict least frequently used items.</li>
+            <li><strong>FIFO:</strong> evict oldest inserted items.</li>
+            <li>Set expiration/TTL and decide which requests are safe and useful to cache.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Cache both carefully</h3>
+          <p>Applications may cache retrieved context as well as final responses. Respect user identity, authorization, privacy, and freshness boundaries so one user cannot receive another user's data and stale results do not persist past policy.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="agents">
+      <div class="section-heading"><span class="section-number">06</span><h2>Agentic Patterns and Orchestration</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Agent loop</h3>
+          <p>A single-pass system returns its first response. An agentic workflow can evaluate an intermediate result, retrieve more context, choose another action, and refine the response until a stopping condition is met.</p>
+          <div class="flow"><div class="step">Plan / choose action</div><span class="arrow">&rarr;</span><div class="step">Use tool or retrieve</div><span class="arrow">&rarr;</span><div class="step">Observe and evaluate</div><span class="arrow">&circlearrowleft;</span></div>
+          <p>Set limits on steps, time, tool permissions, and cost to prevent uncontrolled loops.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Read and write actions</h3>
+          <p>Read actions fetch information. Write actions can change external state, such as updating an order or sending an email, and therefore require stricter authorization and confirmation.</p>
+          <p>Separate the model's proposed action from the trusted component that validates and executes it.</p>
+        </article>
+        <article class="note cyan wide">
+          <h3>Orchestration chains</h3>
+          <p>Frameworks such as LangChain can connect model calls, retrievers, tools, and evaluators. A simple chain might be:</p>
+          <div class="flow"><div class="step">Raw query</div><span class="arrow">&rarr;</span><div class="step">Retrieve context</div><span class="arrow">&rarr;</span><div class="step">Build prompt</div><span class="arrow">&rarr;</span><div class="step">Generate</div><span class="arrow">&rarr;</span><div class="step">Evaluate / escalate</div></div>
+          <p>Assess an orchestration approach for integration and extensibility, support for complex or parallel pipelines, usability, performance, and scalability.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="observability">
+      <div class="section-heading"><span class="section-number">07</span><h2>Monitoring, Observability, and Metrics</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Monitoring vs. observability</h3>
+          <p><strong>Monitoring</strong> tracks defined signals and alerts when they cross limits. <strong>Observability</strong> uses metrics, logs, traces, and system context to investigate why a behavior occurred.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Operational measures</h3>
+          <ul>
+            <li><strong>MTTD:</strong> mean time to detect a problem.</li>
+            <li><strong>MTTR:</strong> mean time to respond to or resolve a detected problem.</li>
+            <li><strong>Change failure rate:</strong> share of deployments that cause failures requiring corrective work.</li>
+          </ul>
+          <p>Lower detection and resolution times indicate faster incident response; definitions should be consistent within the team.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Logs, metrics, and traces</h3>
+          <ul>
+            <li><strong>Metrics:</strong> aggregate signals over time for trends and alerts.</li>
+            <li><strong>Logs:</strong> event records useful for inspecting individual failures.</li>
+            <li><strong>Traces:</strong> a request's path through services, models, retrieval, and tools.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Design metrics around failures</h3>
+          <ul>
+            <li>Grounding/faithfulness and hallucination indicators.</li>
+            <li>Schema and format failure rates.</li>
+            <li>Safety-trigger, refusal, and policy-bypass rates.</li>
+            <li>Token usage, API cost, and latency such as TTFT and total response time.</li>
+            <li>Output length when users need concise responses.</li>
+            <li>RAG retrieval quality, context relevance, and precision.</li>
+          </ul>
+        </article>
+        <article class="note wide">
+          <h3>Connect model metrics to product outcomes</h3>
+          <p>Evaluation metrics should map to operational monitoring, and both should connect to business outcomes such as task completion, retention, or service quality. If production monitoring reveals a failure not covered by offline evaluation, update the evaluation set and criteria.</p>
+          <p>Watch for drift in user behavior, system prompts, business needs, underlying models, and data. A strong benchmark score is not a substitute for observing the live product.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="feedback">
+      <div class="section-heading"><span class="section-number">08</span><h2>User Feedback and the Data Flywheel</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Explicit and implicit signals</h3>
+          <ul>
+            <li><strong>Explicit:</strong> ratings, written comments, or selecting a preferred answer.</li>
+            <li><strong>Implicit:</strong> edits, corrections, early exits, repeated attempts, conversation length, or the kinds of tasks a user returns to.</li>
+          </ul>
+          <p>These signals can reveal friction and guide product or model iteration, but behavior does not always reveal intent. Long sessions, for example, may indicate engagement or difficulty.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Choose when to ask</h3>
+          <p>Collect feedback at useful moments, such as after a task, when the system has low confidence, or after a failure or correction. A pairwise choice can be easier than asking users to assign an abstract score.</p>
+          <p>Ask only when the signal is useful and the interaction cost is reasonable.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Feedback has bias</h3>
+          <ul>
+            <li>Users may click randomly or without reading carefully.</li>
+            <li>Position and recency can influence which answer is selected.</li>
+            <li>Different users may have different preferences and expertise.</li>
+            <li>Feedback may overrepresent frequent users or popular tasks.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Degenerate feedback loops</h3>
+          <p>If a system shows more of what users already select, it may narrow its behavior and amplify existing preferences or bias. Training on approval signals can also encourage sycophancy: agreeing or flattering users instead of being accurate.</p>
+          <p>Preserve diversity, examine subgroup effects, and balance preference signals with correctness, safety, and expert review.</p>
+        </article>
+        <article class="note wide yellow">
+          <h3>Close the loop responsibly</h3>
+          <div class="flow"><div class="step">User interaction</div><span class="arrow">&rarr;</span><div class="step">Collect governed feedback</div><span class="arrow">&rarr;</span><div class="step">Analyze failures and preferences</div><span class="arrow">&rarr;</span><div class="step">Update product, data, or model</div><span class="arrow">&rarr;</span><div class="step">Evaluate again</div></div>
+          <p>A data flywheel creates a product advantage only when data collection is privacy-aware, representative, and tied to measurable improvements. Feedback is an important signal, not an instruction to optimize blindly for clicks.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>Prepared from the supplied Chapter 10 transcript. Feedback and monitoring metrics should be adapted to the product's policies and user context.</footer>
+  </main>
+</body>
+</html>
