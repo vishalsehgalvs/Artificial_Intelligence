@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 3 | Evaluation Methodology</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 3</div><h1>Evaluation Methodology</h1><p class="subtitle">Language-model loss, functional tests, similarity, AI judges, and comparative rankings</p><p class="thesis">Use evaluation methods whose assumptions fit the task. Token predictability, reference similarity, preference, and functional success measure different things and should not be treated as interchangeable.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=137">Source: book pp. 113-158 / PDF p. 137</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">Challenges of Evaluating Foundation Models</a><a href="#section-2">Understanding Language Modeling Metrics</a><a href="#section-3">Exact Evaluation</a><a href="#section-4">AI as a Judge</a><a href="#section-5">Ranking Models with Comparative Evaluation</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>Challenges of Evaluating Foundation Models</h2></div><a class="source" href="../AI%20Engineering.pdf#page=138">Source: book pp. 114-119 / PDF p. 138</a><div class="grid"><article class="note "><h3>Why evaluation becomes harder</h3><p>Open-ended tasks have many valid responses, powerful models require specialized evaluators, internals and training data can be opaque, and benchmarks saturate or leak. General-purpose models also create the problem of discovering unknown capabilities and risks.</p><p>Word of mouth and a handful of appealing examples are not a repeatable evaluation process. Maintain representative tests, explicit rubrics, versioned configurations, and expert checks proportional to consequences. Evaluation is both risk reduction and a way to discover opportunities for improvement.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Understanding Language Modeling Metrics</h2></div><a class="source" href="../AI%20Engineering.pdf#page=142">Source: book pp. 118-125 / PDF p. 142</a><div class="grid"><article class="note "><h3>Entropy, cross-entropy, and KL divergence</h3><p>Entropy measures expected information or uncertainty in a distribution. Cross-entropy measures the cost of predicting actual outcomes using a model’s distribution. Lower loss means more probability assigned to observed tokens, not necessarily better user-facing answers.</p><div class="equation">H(P) = -&Sigma; P(x) log P(x)<br>H(P,Q) = -&Sigma; P(x) log Q(x)<br>H(P,Q) = H(P) + D<sub>KL</sub>(P || Q)</div><p>The data’s irreducible uncertainty and mismatch between learned and true distributions both contribute. KL divergence is non-negative. Specify log base: base 2 gives bits, natural log gives nats.</p></article>
+<article class="note yellow"><h3>BPC, BPB, and correct normalization</h3><p>Bits per character and bits per byte divide total negative log probability in bits by the number of characters or bytes in the original text. They help compare compression-like performance across tokenizations.</p><div class="equation">Total bits = -&Sigma; log<sub>2</sub> Q(x<sub>i</sub> | x<sub>&lt;i</sub>)<br>BPC = total bits / character count<br>BPB = total bits / byte count</div><p><strong>Example:</strong> a 6-bit average token loss with an average of two characters per token gives 3 BPC. If those characters are one UTF-8 byte each, BPB is also 3. Multibyte characters change the denominator. Count actual encoded bytes instead of assuming every character is an arbitrary fraction of a byte.</p></article>
+<article class="note cyan"><h3>Perplexity: interpretation and limits</h3><div class="equation">PPL = 2<sup>H(P,Q)</sup> for bit loss, or exp(H(P,Q)) for nat loss<br>PPL(x<sub>1:n</sub>) = exp[-(1/n)&Sigma; ln Q(x<sub>i</sub>|x<sub>&lt;i</sub>)]</div><p>Perplexity is the inverse geometric mean token probability. Under a uniform effective-choice interpretation, perplexity 4 resembles uncertainty among four equally likely options; it does not generally mean 25% task accuracy.</p><p>Compare the same data, tokenization, context setup, and loss convention. More structure or useful context often lowers perplexity. Post-training may improve helpfulness while worsening next-token loss. Low perplexity can flag familiar/contaminated data, high perplexity unusual data, but neither proves duplication, leakage, or poor quality without investigation.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Exact Evaluation</h2></div><a class="source" href="../AI%20Engineering.pdf#page=149">Source: book pp. 125-136 / PDF p. 149</a><div class="grid"><article class="note "><h3>Functional correctness and pass@k</h3><p>Judge whether the required function succeeds: tests pass, a reservation is actually made, or a requested artifact meets requirements. Tests need sufficient coverage and safe execution environments; passing weak tests is not proof of full correctness.</p><p><strong>pass@k</strong> asks whether at least one of k generated candidates solves a problem. More candidates cost more and do not describe the quality of a single unselected answer.</p><div class="equation">For n sampled candidates with c correct:<br>estimated pass@k = 1 - C(n-c,k) / C(n,k)<br>Use only when n &ge; k and sampling assumptions fit.</div></article>
+<article class="note yellow"><h3>Similarity measurements against reference data</h3><p><strong>Exact match</strong> is useful for constrained tasks, but can reject correct paraphrases. Naive substring matching can accept an answer that includes the right keyword inside a false statement. Normalize only what the task permits.</p><p><strong>Lexical similarity:</strong> edit distance counts insertions, deletions, substitutions and sometimes transpositions; n-gram overlap compares token sequences. BLEU is precision-oriented with a brevity penalty, ROUGE is commonly recall-oriented, and METEOR includes richer matching. These scores depend on tokenization and reference quality. A correct alternate caption, translation, or program may score poorly, while a near-identical but false statement may score well.</p></article>
+<article class="note cyan"><h3>Embeddings and semantic similarity</h3><p>Embeddings represent text or other data as vectors. A useful embedding places examples similar in the target sense close together. Token, sentence, document, and multimodal embeddings are distinct choices; higher dimension alone does not ensure better utility.</p><div class="equation">cosine(a,b) = (a &middot; b) / (||a|| ||b||)</div><p>Cosine normally ranges from -1 to 1; dot product is equivalent to cosine only for normalized vectors. Similar topic does not imply entailment or factual agreement. Evaluate embeddings using the intended retrieval/ranking task as well as available embedding benchmarks. CLIP-style joint spaces support text-image comparison through learned modality-specific encoders and projections.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>AI as a Judge</h2></div><a class="source" href="../AI%20Engineering.pdf#page=160">Source: book pp. 136-148 / PDF p. 160</a><div class="grid"><article class="note "><h3>Why use it, and how?</h3><p>AI judges can scale subjective review, explain decisions, work without a fixed reference for some tasks, and reduce human annotation costs. Three patterns are standalone scoring, candidate-versus-reference comparison, and pairwise candidate preference.</p><p>Define the task, evaluation criterion, score meanings, and output format. Include representative scored examples to calibrate the rubric. Short discrete scales or pairwise decisions can be easier to apply consistently than fine-grained ratings. A label such as “faithfulness” is not standardized across tools; inspect the actual prompt and model.</p></article>
+<article class="note yellow"><h3>Limitations, bias, privacy, and cost</h3><p>Judges can be inconsistent, favor their own outputs, prefer the first answer, or reward verbosity rather than quality. Swap candidate order, allow ties/uncertainty, blind provenance when possible, and compare against expert judgments. Low temperature reduces some variance but is not a correctness guarantee.</p><p>Version the judge prompt, model, scoring schema, sampling, and preprocessing. A change in the judge can look like a change in the application. Evaluation can cost more than generation; consider asynchronous judging or risk-based samples. External judging needs the same privacy review as external generation.</p></article>
+<article class="note cyan"><h3>What models can act as judges?</h3><p>A larger general model is not always necessary. A smaller specialized judge may perform better on a narrowly defined criterion. <strong>Reward models</strong> score prompt-response pairs; <strong>reference-based judges</strong> assess agreement with a target; <strong>preference models</strong> choose among responses.</p><p>Self-critique is useful feedback but not independent validation. Combine deterministic tests, calibrated judges, and human review. Some tasks are easier to verify than generate, while others require expertise beyond the proposed judge.</p></article></div></section>
+<section class="section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Ranking Models with Comparative Evaluation</h2></div><a class="source" href="../AI%20Engineering.pdf#page=172">Source: book pp. 148-158 / PDF p. 172</a><div class="grid"><article class="note "><h3>Pointwise scores versus pairwise preferences</h3><p>Pointwise evaluation scores each model independently. Comparative evaluation collects head-to-head judgments on common prompts and uses them to infer relative strength. Permit ties rather than forcing random choices.</p><p>A simple win rate is wins divided by comparisons, with an explicit convention for ties. Opponent strength and sample mix matter. Elo-style systems update ratings from outcomes; Bradley-Terry models estimate latent strengths from pairwise data. Ratings are properties of the tested population and protocol, not universal measures of intelligence.</p></article>
+<article class="note yellow"><h3>Challenges and the future of comparative evaluation</h3><p>All pairs among n models require n(n-1)/2 pairings before repetitions. Active matching can prioritize uncertain comparisons. Preferences may be non-transitive, and uneven prompt distributions or weak/malicious raters can distort results. Report uncertainty and sufficient match counts, not only a rank.</p><p>Public rankings help screen candidates but may not reflect your users. Relative preference cannot tell whether either model clears your minimum quality bar. Correctness questions should not be settled by unqualified preference votes. Side-by-side comparison differs from randomized A/B tests of real product outcomes; use them as complementary evidence.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>When does perplexity fail as a proxy for application success?</li><li>Why can exact, lexical, and semantic metrics disagree?</li><li>What does pass@k measure that pass@1 does not?</li><li>How would you calibrate and version an AI judge?</li><li>Why does winning a ranking not establish production readiness?</li></ol><div class="callout">Choose a measurement for each failure mode and validate the measurement itself. No single score replaces functional checks, representative data, and accountable judgment.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
