@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 1 | Building with Foundation Models</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 1</div><h1>Building with Foundation Models</h1><p class="subtitle">Capabilities, product choices, use cases, and the AI engineering stack</p><p class="thesis">Start with the user problem and its usefulness threshold. Adapt an existing model where possible, then invest in evaluation, context, data, and operations to make the application dependable.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=25">Source: book pp. 1-48 / PDF p. 25</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">The Rise of AI Engineering</a><a href="#section-2">Foundation Model Use Cases</a><a href="#section-3">Planning AI Applications</a><a href="#section-4">The AI Engineering Stack</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>The Rise of AI Engineering</h2></div><a class="source" href="../AI%20Engineering.pdf#page=26">Source: book pp. 2-16 / PDF p. 26</a><div class="grid"><article class="note "><h3>From language models to large language models</h3><p>A language model learns statistical relationships among tokens. Text generation repeatedly predicts the next token from prior context. Tokens need not equal words: subwords, punctuation, and bytes allow a finite vocabulary to represent unfamiliar words. Different tokenizers produce different counts, especially across languages, so token budgets and prices must be interpreted with the tokenizer in mind.</p><p><strong>Masked models</strong> predict hidden tokens using surrounding context; <strong>autoregressive models</strong> predict continuations using only preceding tokens. Many tasks can be framed as completion, but raw completion is not the same as helpful conversation.</p></article>
+<article class="note yellow"><h3>Self-supervision removes a labeling bottleneck</h3><p>Targets are derived from the training data rather than written separately by human annotators. A sequence such as “We build useful tools” supplies prefix-to-next-token examples. Beginning/end tokens teach starts and stops. A loss penalizes assigning too little probability to the observed next token.</p><p>This differs from unsupervised learning with no explicit target. Large-scale pre-training becomes possible because raw sequences provide targets automatically. Human annotation is still important for later instruction and preference training, evaluation, and quality control.</p></article>
+<article class="note cyan"><h3>From LLMs to foundation models</h3><p>A foundation model is trained broadly enough to support adaptation to many downstream tasks. It can be language-only or multimodal; multimodality is not a requirement for the term. Images, audio, video, and other data can condition outputs as well as text.</p><p><strong>CLIP</strong> illustrates natural-language supervision: paired captions and images train compatible representations. An embedding is a numerical representation designed to capture useful relationships. Joint embedding spaces let text and images be compared, supporting cross-modal retrieval and other tasks.</p></article>
+<article class="note pink"><h3>From foundation models to AI engineering</h3><p>Broader capabilities, increased investment, and lower access barriers help explain adoption. Model APIs and available weights let teams build applications without first financing pre-training. Easier demos do not eliminate the harder work of reliability, evaluation, privacy, and product integration.</p><p>The three recurring adaptation choices are <strong>prompting</strong> for instructions/examples, <strong>RAG</strong> for retrieving relevant information into context, and <strong>fine-tuning</strong> for changing learned behavior. Tools and agents extend context construction into action-taking workflows.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Foundation Model Use Cases</h2></div><a class="source" href="../AI%20Engineering.pdf#page=40">Source: book pp. 16-28 / PDF p. 40</a><div class="grid"><article class="note "><h3>Coding, image/video production, and writing</h3><ul><li><strong>Coding:</strong> completion, explanation, debugging, translation, documentation, tests, and assistance across development workflows. Check execution and integration rather than judging code by appearance.</li><li><strong>Image/video:</strong> generate or edit assets, visualize ideas, create marketing material, and personalize production. Consistency, rights, brand safety, and human review remain relevant.</li><li><strong>Writing:</strong> draft, edit, brainstorm, translate, or adapt tone. Evaluate factuality and audience fit; fluent text may still be generic or wrong.</li></ul><p>Reported productivity improvements depend on task difficulty and study conditions. Automation of individual tasks does not by itself establish replacement of an entire profession.</p></article>
+<article class="note yellow"><h3>Education, bots, aggregation, organization, automation</h3><ul><li><strong>Education:</strong> personalized explanations, exercises, feedback, and practice. Preserve learning and verify correctness rather than merely supplying plausible answers.</li><li><strong>Conversational bots:</strong> support, assistance, entertainment, role-playing, and companionship, each with different safety and success criteria.</li><li><strong>Information aggregation:</strong> search across documents and communication channels, synthesize research, and answer source-grounded questions.</li><li><strong>Data organization:</strong> extract structured fields, classify, tag, organize media, and support analysis.</li><li><strong>Workflow automation:</strong> connect steps and tools to carry out tasks, with approvals for consequential changes.</li></ul></article>
+<article class="note cyan"><h3>Enterprise risk and bounded tasks</h3><p>Internal applications often have a different risk profile from public-facing products. A model can be open-ended while the application task is bounded, such as routing support requests into categories. Bounded outputs are often easier to evaluate and control.</p><p>Judge the whole workflow: an impressive output is not useful if people must spend more time verifying or repairing it than the task originally required. Measure what people actually accomplish.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Planning AI Applications</h2></div><a class="source" href="../AI%20Engineering.pdf#page=52">Source: book pp. 28-35 / PDF p. 52</a><div class="grid"><article class="note "><h3>Use-case evaluation and defensibility</h3><p>Clarify why AI is needed, whether simpler software or an existing product solves the problem, and whether to build or buy. Separate learning experiments from products expected to produce measurable returns.</p><p>Define how AI fits: a core product or supporting feature, static or personalized behavior, suggestions for humans or autonomous execution. Decide where a human reviews, chooses, or takes over. Defensibility can come from proprietary useful data, distribution, workflow integration, and accumulated product understanding; a temporary model weakness is a fragile business foundation.</p></article>
+<article class="note yellow"><h3>Setting expectations</h3><p>Map business outcomes into measurable quality, latency, cost, privacy, and reliability requirements. Establish a <strong>usefulness threshold</strong>: the minimum performance required for the application to be worth using. Different user groups may have different thresholds.</p><p>A support bot answering more messages is not necessarily helping more customers. Include satisfaction and resolution, not just output volume. Define acceptable fallback behavior and what the system must not do before choosing a model.</p></article>
+<article class="note cyan"><h3>Milestones and maintenance</h3><p>Prototype success can arrive quickly while the final reliability gains take much longer. Budget for edge cases, evaluation data, deployment, feedback, and ongoing operations rather than extrapolating linearly from a demo.</p><p>Track changing prices, providers, model behavior, user demand, and regulations. Reassess build/buy and migration decisions through cost-benefit analysis. A provider update can help one task and break another, so changes need regression tests even when advertised as improvements.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>The AI Engineering Stack</h2></div><a class="source" href="../AI%20Engineering.pdf#page=59">Source: book pp. 35-48 / PDF p. 59</a><div class="grid"><article class="note "><h3>Three layers and shared responsibility</h3><p><strong>Application:</strong> evaluation, prompts, context construction through retrieval/tools, and user interfaces. <strong>Model:</strong> modeling/training, data curation, fine-tuning, model evaluation, and inference optimization. <strong>Infrastructure:</strong> serving, compute/data management, monitoring, and operational support.</p><p>The boundaries overlap. Application choices such as output length influence serving costs, and infrastructure constraints influence model choice. A team needs an end-to-end view even if specialists own individual components.</p></article>
+<article class="note yellow"><h3>AI engineering versus ML and full-stack engineering</h3><p>Traditional ML often trains task-specific predictors; foundation-model applications emphasize adaptation, large-model serving, and evaluation of open-ended behavior. Data work shifts toward tokenization, deduplication, retrieval, and demonstration quality rather than disappearing.</p><p>Full-stack engineers bring product integration and fast iteration; ML engineers bring statistics, data analysis, and model knowledge. AI engineering needs both kinds of judgment. Available APIs lower the entry barrier but do not make engineering knowledge unnecessary.</p><p><strong>Terminology:</strong> pre-training learns broad capabilities, fine-tuning continues training from existing weights, and post-training usually means shaping a pre-trained model toward instruction-following and preferences before release.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Why is a foundation model not necessarily multimodal?</li><li>How does self-supervision create training targets?</li><li>What is the usefulness threshold of your intended product?</li><li>Which task needs prompting, retrieval, or changed weights, and why?</li></ol><div class="callout">A lower barrier to building a demo increases, rather than removes, the importance of product fit, rigorous evaluation, and disciplined operations.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
