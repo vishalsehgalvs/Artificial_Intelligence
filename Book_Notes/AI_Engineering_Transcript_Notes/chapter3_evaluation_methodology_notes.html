@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Detailed whiteboard-style notes on evaluating foundation models.">
+  <title>Chapter 3 | Evaluation Methodology</title>
+  <link rel="stylesheet" href="whiteboard-notes.css">
+</head>
+<body>
+  <main class="board">
+    <header class="masthead">
+      <div class="eyebrow">AI Engineering | Chapter 3</div>
+      <h1>Evaluation Methodology</h1>
+      <p class="subtitle">Measure capability, expose failure, and guide improvement</p>
+      <p class="thesis">Evaluation turns a promising AI demo into a system that can be responsibly improved and considered for production. A useful evaluation combines objective checks, human judgment, and carefully designed AI-assisted metrics.</p>
+      <nav aria-label="Chapter sections">
+        <a href="#purpose">Purpose</a><a href="#challenges">Challenges</a><a href="#lm-metrics">LM metrics</a><a href="#exact">Exact evaluation</a><a href="#judge">AI judge</a><a href="#compare">Comparative ranking</a>
+      </nav>
+    </header>
+
+    <section class="section" id="purpose">
+      <div class="section-heading"><span class="section-number">01</span><h2>Why Evaluate?</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Quality control for open-ended systems</h3>
+          <p>Foundation models may answer the same prompt in many ways. Quality can depend on correctness, relevance, faithfulness to context, coherence, safety, and format, so a single yes/no label is often insufficient.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Evaluation has two jobs</h3>
+          <ul>
+            <li><strong>Mitigate risk:</strong> find where the system is likely to fail before users depend on it.</li>
+            <li><strong>Reveal opportunities:</strong> identify capabilities that can be improved through data, prompts, models, or product changes.</li>
+          </ul>
+        </article>
+        <article class="note cyan wide">
+          <h3>Evaluation is a system, not a single score</h3>
+          <p>Language-model metrics can inform foundation-model evaluation because foundation models often contain a language-model component. But token-prediction metrics do not measure every user-facing capability; combine them with task-specific tests and product criteria.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="challenges">
+      <div class="section-heading"><span class="section-number">02</span><h2>Challenges in Evaluating Foundation Models</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>No single ground truth for many tasks</h3>
+          <p>Summaries, explanations, and creative responses can have multiple valid forms. Constructing reliable criteria and reference examples is difficult, especially when model outputs are open-ended.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Black-box behavior</h3>
+          <p>Hosted models may expose little about their internals, training data, or update history. Evaluation must therefore emphasize observable behavior and repeatable test cases.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Benchmarks age quickly</h3>
+          <p>As models improve, older benchmarks may stop distinguishing capabilities. The lecture cites GLUE followed by SuperGLUE and evolving MMLU-style benchmarks as examples of the need to refresh evaluation sets.</p>
+        </article>
+        <article class="note pink">
+          <h3>“General purpose” is broad</h3>
+          <p>No finite benchmark covers every way people may use a general-purpose model. Choose tests from expected use cases, risks, user populations, and business needs, and update them as those change.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="lm-metrics">
+      <div class="section-heading"><span class="section-number">03</span><h2>Language-Model Metrics</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Entropy and cross-entropy</h3>
+          <p><strong>Entropy</strong> describes uncertainty in a data distribution. <strong>Cross-entropy</strong> measures how much probability a model assigns to the tokens that actually occur; higher cross-entropy means worse next-token prediction on that data.</p>
+          <div class="equation">H(P, Q) = H(P) + D<sub>KL</sub>(P || Q)<br>P = true data distribution; Q = model distribution</div>
+          <p>The irreducible uncertainty in the data and the mismatch between model and data distributions both contribute. KL divergence is non-negative.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Perplexity</h3>
+          <p>Perplexity is an exponential transformation of cross-entropy and is often interpreted as a measure of next-token uncertainty.</p>
+          <div class="equation">Perplexity = 2<sup>cross-entropy</sup> when measured in bits<br>Perplexity = e<sup>cross-entropy</sup> when measured in nats</div>
+          <ul>
+            <li>Lower perplexity means the model predicts the evaluation text more confidently.</li>
+            <li>More structured text or useful context can make prediction easier.</li>
+            <li>Perplexity is a proxy for token prediction, not a complete measure of instruction-following or answer quality.</li>
+          </ul>
+        </article>
+        <article class="note cyan">
+          <h3>Bits per character and byte</h3>
+          <p><strong>BPC</strong> normalizes loss by characters, but character encoding conventions vary. <strong>BPB</strong> normalizes by bytes and can be more comparable across tokenizers when calculated consistently.</p>
+          <p>These measures describe compression-like predictability of text, not factual correctness by themselves.</p>
+        </article>
+        <article class="note pink">
+          <h3>Use perplexity with care</h3>
+          <p>Very low perplexity on a held-out benchmark can be a warning sign of familiarity or possible train-test contamination; it is not proof of leakage. Very high perplexity can flag unusual or out-of-distribution text. Use data audits and other checks to investigate.</p>
+          <p>Post-training for instruction-following can shift next-token metrics slightly. Judge the intended application behavior, not perplexity alone.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="exact">
+      <div class="section-heading"><span class="section-number">04</span><h2>Exact and Reference-Based Evaluation</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Functional correctness</h3>
+          <p>When outputs can be executed or checked against constraints, use deterministic tests. Code generation is a strong example: run generated code against unit tests and count whether a valid solution is found.</p>
+          <p><strong>pass@k:</strong> generate up to k candidates for a problem and measure the fraction of problems for which at least one candidate passes. Larger k can improve the chance of success but increases inference cost and latency.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Similarity to a reference</h3>
+          <p>Compare a generated answer with one or more reference answers. References can be human-written or model-assisted, but should be reviewed for correctness and coverage.</p>
+          <ul>
+            <li><strong>Exact match:</strong> strict and easy to compute; too rigid for many open-ended tasks.</li>
+            <li><strong>Lexical similarity:</strong> edit distance or n-gram overlap measures shared wording.</li>
+            <li><strong>Semantic similarity:</strong> compare embeddings so paraphrases can be close in meaning.</li>
+          </ul>
+        </article>
+        <article class="note cyan wide">
+          <h3>Reference metrics can miss correct alternatives</h3>
+          <p>A response may be correct yet differ from the reference wording. This is common in translation, summarization, and explanations. Lexical matching can under-score valid answers, and similarity does not guarantee functional correctness. Use multiple references or task-specific checks when possible.</p>
+          <p>Similarity methods are also useful for retrieval, ranking, clustering, anomaly detection, and deduplication. The metric should match the job being evaluated.</p>
+        </article>
+        <article class="note pink wide">
+          <h3>Multimodal similarity: CLIP-style example</h3>
+          <p>Encode an image and its caption separately, map them into a shared embedding space, then measure similarity. Contrastive training pulls matching image-text pairs together and separates mismatched pairs. This measures alignment in representation space, not every aspect of image understanding or answer quality.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="judge">
+      <div class="section-heading"><span class="section-number">05</span><h2>AI as a Judge</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>What it does</h3>
+          <p>An AI judge evaluates generated outputs using a rubric or comparison prompt. It can provide self-critique, compare a candidate to a reference, or choose the better of two candidate responses.</p>
+          <p>It can be faster and cheaper than expert review at scale and can help produce preference data. However, it is still a model-based, prompt-sensitive measurement.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Write a judge rubric carefully</h3>
+          <ol>
+            <li>State the judging task clearly, such as relevance or faithfulness.</li>
+            <li>Define criteria and what counts as good or poor evidence.</li>
+            <li>Specify a consistent output schema and a compact rating scale.</li>
+            <li>Include good and bad examples when they improve calibration.</li>
+            <li>Control sampling settings and periodically compare judgments with humans.</li>
+          </ol>
+          <p>Pairwise preference is often easier for a judge than assigning a finely calibrated absolute score.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Common limitations</h3>
+          <ul>
+            <li><strong>Inconsistency:</strong> the same case can receive different scores.</li>
+            <li><strong>Criteria ambiguity:</strong> prompts, models, and scales differ across evaluators.</li>
+            <li><strong>Cost and latency:</strong> judging adds model calls and tokens.</li>
+            <li><strong>Privacy:</strong> sending outputs to an external judge may expose sensitive data.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Known judge biases</h3>
+          <ul>
+            <li><strong>Self-preference:</strong> favoring its own responses.</li>
+            <li><strong>Position bias:</strong> favoring the first candidate; swap order and compare.</li>
+            <li><strong>Verbosity bias:</strong> treating longer answers as better, even when they are not.</li>
+          </ul>
+        </article>
+        <article class="note wide yellow">
+          <h3>Use a layered evaluation strategy</h3>
+          <p>Combine AI judging with exact tests where available and human review for important or ambiguous cases. A small specialized judge may be useful for a narrow criterion. Reward models score prompt-response pairs; reference-based judges compare to examples; preference models choose between candidate responses.</p>
+          <p>One practical pattern is to use a lower-cost model for broad generation, then judge a sampled subset and audit results with humans. A judge is not an unquestionable ground truth, especially when it is itself the strongest model in the system.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="compare">
+      <div class="section-heading"><span class="section-number">06</span><h2>Comparative Evaluation and Model Ranking</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Head-to-head comparison</h3>
+          <p>Show two candidate outputs for the same task and ask a human or AI judge which is better. A <strong>match</strong> is a comparison; a model's <strong>win rate</strong> is the proportion of its matches it wins.</p>
+          <div class="equation">Win rate = wins / completed matches</div>
+          <p>Comparisons capture relative preference, but not whether either response meets an absolute quality threshold.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Comparative evaluation vs. A/B testing</h3>
+          <p>In side-by-side comparison, the evaluator sees both outputs for one task at the same time. In A/B testing, users are assigned to different variants and typically see one version in a given interaction; outcomes are compared across groups or time.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Challenges at scale</h3>
+          <ul>
+            <li><strong>Quadratic comparisons:</strong> all pairs among n models require n(n-1)/2 comparisons.</li>
+            <li><strong>Non-transitive preferences:</strong> A beating B and B beating C does not guarantee A beats C, especially when prompts, judges, and sampling differ.</li>
+            <li><strong>Quality control:</strong> public votes can be noisy, uninformed, or manipulated.</li>
+            <li><strong>Efficient matching:</strong> choose comparisons that reduce uncertainty rather than testing every pair equally.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Pair relative and absolute measures</h3>
+          <p>“B is better than A” does not mean B is good enough. Pair win rates with task-level thresholds, functional tests, safety checks, and cost-benefit analysis before switching models.</p>
+          <p>Comparisons are valuable because people can often choose between two outputs more consistently than they can assign an objective score to one output.</p>
+        </article>
+        <article class="note wide">
+          <h3>Evaluation pipeline takeaway</h3>
+          <p>Build a repeatable pipeline that reflects intended users and failure modes. Keep held-out data protected, refresh benchmarks, measure both quality and cost, investigate suspicious results, and connect offline evaluation to production monitoring.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>Prepared from the supplied Chapter 3 transcript. Metrics are summarized with standard interpretations; benchmark-specific claims remain experimental.</footer>
+  </main>
+</body>
+</html>
