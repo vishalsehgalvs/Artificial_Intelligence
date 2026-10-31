@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 2 | Understanding Foundation Models</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 2</div><h1>Understanding Foundation Models</h1><p class="subtitle">Training data, architecture, scaling, alignment, sampling, and probabilistic behavior</p><p class="thesis">A model’s behavior emerges from what it was trained on, how it was built, what post-training optimized, and how generation is sampled. All four matter when selecting and debugging a model.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=73">Source: book pp. 49-112 / PDF p. 73</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">Training Data</a><a href="#section-2">Modeling: Architecture and Size</a><a href="#section-3">Post-Training</a><a href="#section-4">Sampling Fundamentals and Strategies</a><a href="#section-5">Test-Time Compute and Structured Outputs</a><a href="#section-6">Probabilistic Behavior: Inconsistency and Hallucination</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>Training Data</h2></div><a class="source" href="../AI%20Engineering.pdf#page=74">Source: book pp. 50-58 / PDF p. 74</a><div class="grid"><article class="note "><h3>Web data, multilingual models, and representation</h3><p>Broad web corpora provide scale but contain misinformation, duplicates, uneven representation, and content with uncertain rights. Availability does not imply suitability. Models inherit capabilities and biases from these distributions.</p><p>High-resource languages receive more training exposure than low-resource languages, often disproportionately to speaker populations. A model strong in English may be much worse at reasoning, safety, and instruction-following in another language. Tokenization can make the same meaning cost more tokens and consume more context in underrepresented languages. Evaluate realistic language and dialect inputs, not translated benchmarks alone.</p></article>
+<article class="note yellow"><h3>Domain-specific models</h3><p>General-purpose corpora include many domains, but specialist tasks may require representations and data absent from the web: molecular sequences, clinical images, proprietary schemas, or niche terminology. Check the actual task rather than assuming a domain-branded model is superior.</p><p>Training distribution can explain why two otherwise similar models differ on specialized image or text datasets. Domain coverage, data quality, task objectives, and post-training all matter; parameter count alone is an incomplete model description.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Modeling: Architecture and Size</h2></div><a class="source" href="../AI%20Engineering.pdf#page=82">Source: book pp. 58-78 / PDF p. 82</a><div class="grid"><article class="note "><h3>Transformer architecture and attention</h3><p>Older encoder-decoder systems compressed inputs into a recurrent state and processed sequences sequentially. Attention lets the model directly weight relevant token representations; transformers allow substantial parallel processing during training and prompt processing. Autoregressive output generation remains sequential unless specialized techniques change it.</p><div class="equation">Q = XW<sub>Q</sub>, K = XW<sub>K</sub>, V = XW<sub>V</sub><br>Attention(Q,K,V) = softmax(QK<sup>T</sup> / &radic;d<sub>k</sub>)V</div><p>Queries determine what a position seeks, keys support matching, and values supply the information combined. Multi-head attention captures different relationships. Causal masking prevents using future tokens for next-token prediction.</p></article>
+<article class="note yellow"><h3>Where parameters live and alternative architectures</h3><p>Transformer blocks combine attention and feedforward networks, with nonlinearities and supporting normalization/residual operations. Hidden dimensions, layer count, feedforward dimensions, vocabulary embeddings, and output projections determine parameter count. Larger context increases runtime memory and computation without necessarily adding weight parameters.</p><p>Alternatives include state-space approaches such as S4/Mamba and hybrids such as Jamba. Mixture-of-experts models activate selected experts per token: total parameters and active parameters are different quantities. Architecture affects hardware behavior, adaptation options, and serving cost, so dense-model comparisons do not transfer mechanically to sparse/hybrid models.</p></article>
+<article class="note cyan"><h3>Parameters, tokens, FLOPs, and compute budgets</h3><p>Model size commonly means parameter count, not the byte size of a stored checkpoint. Weight memory also depends on numerical precision. Dataset size is often measured in tokens because documents and examples vary enormously in length.</p><div class="equation">Weight storage &asymp; parameter count &times; bytes per parameter<br>Dense-transformer training compute &asymp; 6ND FLOPs<br>N = parameters; D = training tokens</div><p>The compute expression is a rough dense-model estimate, not a universal law. FLOPs count operations; FLOP/s is a rate. Runtime depends on achieved throughput and utilization, not advertised peak performance alone. Training budgets also include data, experiments, hardware availability, and engineering.</p></article>
+<article class="note pink"><h3>Scaling laws and compute-optimal training</h3><p>Performance depends jointly on model capacity, data, and compute. Compute-optimal scaling allocates a fixed budget between parameters and tokens rather than making only the model larger. The Chinchilla result is often summarized as roughly 20 training tokens per parameter in its studied setting, with model and token counts growing together.</p><p>This is a training-compute optimum under assumptions, not necessarily a lifetime-cost optimum: a heavily used small model may justify more pre-training because inference savings dominate. Small loss improvements can unlock meaningful capabilities, but gains generally diminish. Extrapolate from smaller experiments cautiously because hyperparameters and data mixes interact. Inverse scaling reminds us that not every measured behavior improves monotonically with size.</p></article>
+<article class="note "><h3>Scaling bottlenecks</h3><p>Compute, energy, high-quality data, and practical infrastructure limit scaling. Public data can be exhausted, contaminated, or intentionally manipulated. Increasingly synthetic web data creates provenance and recursion risks. More data of the wrong kind is not a substitute for relevant signal.</p><p><strong>Parameter versus hyperparameter:</strong> weights are learned; choices such as architecture size, learning rate, batch size, and training schedule govern learning. They must be tuned and recorded to make scaling experiments interpretable.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Post-Training</h2></div><a class="source" href="../AI%20Engineering.pdf#page=102">Source: book pp. 78-88 / PDF p. 102</a><div class="grid"><article class="note "><h3>Supervised fine-tuning (SFT)</h3><p>A pre-trained model can complete arbitrary web-like text without behaving like a helpful assistant. SFT uses demonstration pairs of prompts and desired responses to teach useful response patterns, tool formats, styles, and conversational behavior. It is sometimes described as behavior cloning.</p><p>Good demonstrations require expertise, judgment, consistency, and coverage; sophisticated answers are expensive to annotate. Post-training may expose existing capabilities while teaching new behavior, but it does not guarantee truthfulness or safety. Pre-training, SFT, and preference optimization are a common recipe, not mandatory fixed stages for every model.</p></article>
+<article class="note yellow"><h3>Preference fine-tuning, reward models, RLHF, DPO</h3><p>Demonstrations do not fully specify which of many plausible answers people prefer. Comparison data records a prompt, winning response, and losing response. A reward model can learn to score preferred responses more highly.</p><div class="equation">Pairwise reward loss = -log &sigma;(r(x,y<sub>win</sub>) - r(x,y<sub>lose</sub>))</div><p>In RLHF, a policy generates answers and is optimized using reward-model feedback, often with PPO and a constraint against drifting too far from a reference. DPO optimizes preferences directly without the separate online RL loop. Neither captures a universal human preference: annotator disagreement, reward hacking, excessive refusal, and sycophancy are real risks. Evaluate the intended audience and application.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>Sampling Fundamentals and Strategies</h2></div><a class="source" href="../AI%20Engineering.pdf#page=112">Source: book pp. 88-96 / PDF p. 112</a><div class="grid"><article class="note "><h3>Logits, probabilities, and temperature</h3><p>Each decoding step produces logits over the vocabulary. Softmax converts them into probabilities; sampling chooses the next token. Log probabilities avoid underflow and turn sequence-probability products into sums.</p><div class="equation">p<sub>i</sub> = exp(z<sub>i</sub>/T) / &Sigma;<sub>j</sub> exp(z<sub>j</sub>/T)</div><p>Lower temperature concentrates probability on common choices; higher temperature flattens the distribution. A provider’s “temperature zero” usually means greedy selection, not literal division by zero. Temperature does not add knowledge and cannot guarantee factuality.</p></article>
+<article class="note yellow"><h3>Top-k, top-p, and stopping</h3><p><strong>Top-k</strong> limits candidates to the k highest-scoring tokens. <strong>Top-p/nucleus</strong> uses the smallest high-probability set whose cumulative probability reaches the chosen threshold. <strong>Min-p</strong> uses a threshold relative to the most likely token. These settings affect diversity and interact with temperature.</p><p>Stop at an end token, configured stop sequence, or token limit. Too-short limits can truncate JSON, reasoning, or answers; loose limits add cost and may encourage rambling. Record generation settings with the model and prompt so experiments can be reproduced.</p></article></div></section>
+<section class="section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Test-Time Compute and Structured Outputs</h2></div><a class="source" href="../AI%20Engineering.pdf#page=120">Source: book pp. 96-105 / PDF p. 120</a><div class="grid"><article class="note "><h3>Best-of-N, self-consistency, and verifiers</h3><p>Spend more inference compute by generating multiple candidates, verifying them, reranking them, or aggregating answers. Best-of-N needs a useful scoring rule. Self-consistency uses agreement across samples, which can still be consistently wrong. Average log probability may prefer fluent familiar answers over correct uncommon ones.</p><div class="equation">log p(x<sub>1:n</sub>) = &Sigma;<sub>i</sub> log p(x<sub>i</sub> | x<sub>&lt;i</sub>)</div><p>More samples improve opportunity, not guaranteed final accuracy: weak verifiers can select convincing errors. Parallel candidate generation can sometimes return the first validated answer sooner, but uses more resources. Match the strategy to your latency and budget.</p></article>
+<article class="note yellow"><h3>Getting outputs into the right format</h3><p>Approaches include clear prompts/examples, repair through post-processing, retries/test-time compute, constrained decoding, and fine-tuning. Constrained sampling masks tokens that violate a grammar or schema. A classifier head can replace free-form generation for some fixed-label tasks.</p><p><strong>Syntax is not semantics:</strong> valid JSON is not necessarily schema-valid, and schema-valid content is not necessarily true or authorized. Validate field types, allowed values, cross-field relationships, and business rules. Repair and retries need explicit limits. Constraints may increase latency or change generation quality, so measure them end to end.</p></article></div></section>
+<section class="section" id="section-6"><div class="section-heading"><span class="section-number">06</span><h2>Probabilistic Behavior: Inconsistency and Hallucination</h2></div><a class="source" href="../AI%20Engineering.pdf#page=129">Source: book pp. 105-112 / PDF p. 129</a><div class="grid"><article class="note "><h3>Inconsistency has several sources</h3><p>Identical prompts can produce different answers; tiny prompt changes can also cause large shifts. Sampling controls only some variability. Model versions, parallel computation, numerical precision, and hardware can affect results even under apparently deterministic settings.</p><p>Test prompt perturbations and repeated runs. Freeze accessible versions, record configurations, and detect drift. Build validation and fallback behavior rather than promising deterministic behavior that the deployment cannot support.</p></article>
+<article class="note yellow"><h3>Why hallucinations can persist</h3><p>The book describes complementary hypotheses. <strong>Self-delusion:</strong> a model conditions on its own mistaken earlier output as if it were evidence, compounding the error. <strong>Knowledge mismatch:</strong> supervised responses can train confident answering beyond what the model internally knows, instead of calibrated uncertainty.</p><p>Mitigations include evidence retrieval, independent verification, shorter grounded outputs, appropriate abstention, and training that rewards factual behavior. RLHF does not automatically remove hallucinations and can worsen some measures. Detecting hallucinations is itself difficult; use task-specific checks rather than relying solely on the model’s self-reported confidence.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>How do logits, temperature, top-k, and top-p differ?</li><li>Why can two equal-sized models have different capabilities?</li><li>What assumptions underlie compute-optimal scaling?</li><li>How does SFT differ from RLHF and DPO?</li><li>Why does valid structured output not guarantee a safe or correct action?</li></ol><div class="callout">Treat model claims as hypotheses to test in your workload. Architecture, data, post-training, and decoding settings explain different parts of observed behavior.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
