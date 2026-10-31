@@ -1,0 +1,120 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Low-Code AI | Using BigQuery ML to Train a Linear Regression Model</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1{font-size:38px}h2{font-size:27px}.source,.meta{color:var(--muted);font-size:12px}.source{display:block;margin:4px 0 12px}.note{overflow-wrap:anywhere}.note h4{color:var(--cyan);margin:12px 0 5px}a{color:var(--cyan)}.chapter-list{padding:0;list-style:none}.chapter-list li{padding:13px 0;border-bottom:1px dashed var(--rule)}.chapter-list strong{display:block}.meta{margin-top:18px}.diagram{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:15px 0}.diagram span{border:1px solid var(--cyan);padding:8px 12px}.diagram b{color:var(--yellow)}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:var(--cyan)}
+@media(max-width:760px){h1{font-size:30px}h2{font-size:23px}}
+@media print{body{font-size:11pt;line-height:1.5}.grid{display:block}.note{margin-bottom:20px;break-inside:avoid}h1{font-size:26pt}h2{font-size:19pt}h3{font-size:14pt}.board{padding:5mm}.source,.meta{font-size:8pt}.section{padding:18px 0}.masthead{margin-bottom:20px}pre{font-size:9pt}}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">Low-Code AI | Chapter 6</div><h1>Using BigQuery ML to Train a Linear Regression Model</h1><p class="thesis">Use SQL and BigQuery ML for power-production regression, learning how correlation, preprocessing, explainability, and neural-network nonlinearity affect the pipeline.</p><p class="meta">Original study notes based on Gwendolyn Stripling and Michael Abel, First edition, 2023. Book pp. 147-192. Source APIs, services, experiments, and model comparisons reflect the book's publication period. These are explanatory summaries, not verbatim reproductions or a claim that every source detail is retained.</p><nav aria-label="Notes navigation"><a href="index.html">All chapters</a><a href="#topic-1">Power plant objective and SQL data preparation</a><a href="#topic-2">Linear regression, features, correlation</a><a href="#topic-3">CREATE MODEL and explainability</a><a href="#topic-4">Neural networks and nonlinearity</a></nav></header><div class="diagram" aria-label="Chapter workflow"><span>Load + clean in SQL</span><b>&rarr;</b><span>Explore relationships</span><b>&rarr;</b><span>Train BigQuery ML</span><b>&rarr;</b><span>Explain + validate</span><b>&rarr;</b><span>Compare linear and neural models</span></div><section class="section"><h2>Detailed Notes</h2><div class="grid"><article class="note " id="topic-1"><h3>Power plant objective and SQL data preparation</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=163">Source: book pp. 147-159 / PDF p. 163</a><p>Predict net hourly power output from weather/plant variables. Understand the row meaning, units, ranges, and prediction timing. Load CSV into cloud storage/BigQuery, verify schema and row counts, and clean malformed or missing values with explicit SQL.</p><p>Use SQL to profile distributions and identify outliers, then validate transformed data. Keep credentials and project identifiers out of shared notebooks. Track dataset versions and ensure train/evaluation rows are separated before model fitting.</p></article>
+<article class="note yellow" id="topic-2"><h3>Linear regression, features, correlation</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=176">Source: book pp. 160-174 / PDF p. 176</a><p>Regression predicts a continuous energy-output label. Inspect feature-label relationships and predictor-predictor correlations. Multicollinearity can destabilize coefficient estimates and make individual effects difficult to interpret even when overall predictions remain usable.</p><div class="equation">y&#770; = &beta;<sub>0</sub> + &Sigma; &beta;<sub>j</sub>x<sub>j</sub></div><p>Correlation is not causal influence. Use scatterplots and heat maps to generate hypotheses, not as the only feature-selection rule. Avoid leakage, keep transformations consistent, and compare errors on held-out data.</p></article>
+<article class="note cyan" id="topic-3"><h3>CREATE MODEL and explainability</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=191">Source: book pp. 175-182 / PDF p. 191</a><p>BigQuery ML expresses model training through SQL such as CREATE MODEL, specifying model type, label column, options, and a SELECT query. Separate training data from evaluation; retain model metadata and query versions for reproducibility.</p><p>Explainability tools can estimate how features contribute to predictions. Global importance and local attribution answer different questions and can be affected by correlated predictors. Explanations describe model behavior under a method; they do not prove physical causation. Use exercises to test edge cases and interpret the scale of predictions.</p></article>
+<article class="note pink" id="topic-4"><h3>Neural networks and nonlinearity</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=199">Source: book pp. 183-192 / PDF p. 199</a><p>A neural network stacks learned affine transformations and activation functions. Nonlinear activations allow the network to model relationships that a single linear equation cannot. Without nonlinearities, stacked dense layers collapse into one linear transform.</p><div class="equation">h = &phi;(Wx+b)</div><p>Train a BigQuery ML DNN regressor using suitable features, loss, and evaluation. Compare with linear regression on the same holdout and metric. More flexibility can overfit and reduce interpretability; it does not imply a better result. The chapter’s Cloud Shell section illustrates inspecting cloud files and command output, rather than a new modeling method.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>What does multicollinearity do to coefficient interpretation?</li><li>Why does a DNN need nonlinear activations?</li><li>What does explainability reveal and not prove?</li><li>How should the linear and neural models be compared?</li></ol><div class="callout">SQL can simplify end-to-end modeling near warehouse data, but it does not remove the need for clean splits, diagnostics, and careful interpretation.</div></section><footer>Source links refer to the supplied PDF. Every contents-page topic is mapped in coverage.md. Consult the book for complete implementations, figures, exercises, citations, and experiment evidence.</footer></main></body></html>
