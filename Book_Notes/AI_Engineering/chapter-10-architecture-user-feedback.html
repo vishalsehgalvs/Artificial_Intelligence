@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 10 | Architecture and User Feedback</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 10</div><h1>Architecture and User Feedback</h1><p class="subtitle">Production architecture, guardrails, routing, caches, observability, orchestration, and feedback design</p><p class="thesis">Build from a simple evaluated workflow, add components only for demonstrated needs, and make failures observable. Use user feedback carefully: it is valuable data, but it is biased, contextual, and privacy-sensitive.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=473">Source: book pp. 449-494 / PDF p. 473</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">AI Engineering Architecture</a><a href="#section-2">Monitoring and Observability</a><a href="#section-3">AI Pipeline Orchestration</a><a href="#section-4">User Feedback and Conversational Signals</a><a href="#section-5">Feedback Design</a><a href="#section-6">Feedback Limitations</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>AI Engineering Architecture</h2></div><a class="source" href="../AI%20Engineering.pdf#page=473">Source: book pp. 449-465 / PDF p. 473</a><div class="grid"><article class="note "><h3>Step 1: Enhance context</h3><p>Begin with user request &rarr; model &rarr; answer, then add retrieval/tools when missing information limits usefulness. Sources can include documents, tables, images, user-authorized history, and external services. Context construction plays a role analogous to feature engineering.</p><p>Read-only actions, relevance, freshness, permissions, and source provenance belong in this design. More context is not always better; evaluate what the model can use and how added retrieval affects latency.</p></article>
+<article class="note yellow"><h3>Step 2: Put in guardrails</h3><p>Input guardrails detect unauthorized sensitive data, out-of-scope requests, and adversarial prompts. Apply privacy checks to the final context after retrieval as well as the raw user message. Local tokenization/redaction with a protected reverse map can support permitted masked-data workflows, but is not a universal privacy guarantee.</p><p>Output guardrails detect malformed, unsupported, unsafe, or inappropriate answers and define what happens: repair, bounded retry, fallback, abstention, or human handoff. Measure false refusals and unsafe misses. Guardrails add cost and may conflict with immediate streaming; buffering or incremental checks need explicit product decisions. Consequential actions need trusted authorization, not just output scoring.</p></article>
+<article class="note cyan"><h3>Step 3: Model router and gateway</h3><p>A router chooses the right destination: smaller specialist, larger model, tool path, fixed answer, or human. Intent/scope classification can happen before retrieval to avoid unnecessary work. Context length, capability, policy, budget, and current availability constrain decisions.</p><p>A gateway standardizes access to internal and external models, centralizes authentication/authorization, model catalogs, usage limits, cost accounting, fallbacks, and logging. Keep provider quirks visible enough to debug. Router and gateway responsibilities overlap in some platforms but are conceptually distinct: choose the path versus manage access and execution.</p></article>
+<article class="note pink"><h3>Step 4: Reduce latency with caches</h3><p>Exact caching reuses results for equivalent keys; semantic caching retrieves answers to meaningfully similar queries. Cache embeddings, retrieval results, or final responses where appropriate. KV/prefix caches at the inference layer are different from these system-level caches.</p><p>Semantic similarity can hide differences in identity, time, permissions, or constraints, so a high vector score alone is insufficient. Include relevant context and versions in keys, isolate tenants/users, set TTLs, and invalidate stale content. LRU, LFU, and FIFO govern eviction. Evaluate actual hit rate, answer quality, memory, and lookup overhead before adding a semantic cache.</p></article>
+<article class="note "><h3>Step 5: Add agent patterns</h3><p>Feed observations or unsatisfactory intermediate answers back into retrieval/planning when the task needs multiple steps. Add write tools only with validated arguments, least privilege, approvals, and recoverable execution.</p><p>Set step, token, retry, deadline, and spend limits. Each extra model, router, tool, or loop creates new failure modes and observability needs. A deterministic workflow is often preferable when the sequence is already known; dynamic agents should justify their added complexity.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Monitoring and Observability</h2></div><a class="source" href="../AI%20Engineering.pdf#page=489">Source: book pp. 465-472 / PDF p. 489</a><div class="grid"><article class="note "><h3>Detection, diagnosis, and operational metrics</h3><p>Monitoring tracks defined signals; observability instruments the system so unexpected failures can be investigated. Track failures, attacks, drift, and opportunities for quality/cost improvement from the start.</p><p><strong>MTTD:</strong> average time to detect an incident. <strong>MTTR:</strong> time to respond/resolve under the team’s definition. <strong>Change failure rate:</strong> fraction of deployments causing failures that need remediation, not fraction of failed requests.</p><p>Connect offline criteria with live signals: grounding, formatting, refusals, safety, retrieval quality, completion, latency tails, tokens, cost, rate limits, and business outcomes.</p></article>
+<article class="note yellow"><h3>Metrics, logs, traces, and drift</h3><p>Metrics detect trends and spikes; logs record events; traces link one request across routing, retrieval, generation, judging, and tools. Record model/endpoint/version, prompt/template, sampling, cache decisions, source identifiers, tool calls/results, latency, and errors so regressions are explainable.</p><p>Logging must respect redaction, access, retention, and data-minimization requirements; “log everything” is not permission to store secrets. Protect any raw payloads and use approved sampling when exhaustive capture is costly.</p><p>Detect prompt/template changes, provider/model drift, user behavior shifts, source-data changes, and tool-version changes. Feed new failures back into evaluation and track deploy versions to distinguish causes.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>AI Pipeline Orchestration</h2></div><a class="source" href="../AI%20Engineering.pdf#page=496">Source: book pp. 472-474 / PDF p. 496</a><div class="grid"><article class="note "><h3>Components, chaining, and framework selection</h3><p>Orchestration defines components and their control flow: query processing, retrieval, prompt assembly, generation, checks, and handoff. It may support parallel branches, conditions, loops, persistence, and recovery.</p><p>Evaluate integration/extensibility, support for genuinely complex pipelines, usability, scalability, and performance. A framework can accelerate development while hiding prompts and state. Start with simple explicit functions when adequate; adopt an orchestrator when the operational benefits outweigh abstraction and dependency costs.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>User Feedback and Conversational Signals</h2></div><a class="source" href="../AI%20Engineering.pdf#page=498">Source: book pp. 474-480 / PDF p. 498</a><div class="grid"><article class="note "><h3>Explicit and implicit feedback</h3><p>Explicit signals include ratings, comments, and pairwise choices. Implicit signals include edits, acceptance, retries, early exits, conversation behavior, and downstream use. Feedback can inform evaluation, product decisions, personalization, and approved training data.</p><p>Users must know how their data is used. Consent, ownership, retention, access, and deletion apply to feedback just as to other user data. Do not equate feedback collection with permission to train automatically.</p></article>
+<article class="note yellow"><h3>Extracting natural-language feedback</h3><p>Corrections such as “I meant…” reveal misunderstandings. Rephrasing, requests to verify sources, abandonment, and negative sentiment may reveal uncertainty or friction. Direct edits can provide strong preference demonstrations but still require correctness checks.</p><p>Model refusals and the user’s response to them need interpretation: some refusals are required and appropriate. A request to “check again” does not establish that the answer was wrong. Track context and reasons rather than treating isolated phrases as infallible labels.</p></article>
+<article class="note cyan"><h3>Other conversational feedback</h3><p>Conversation length, topic diversity, continued use, saving/sharing/deleting outputs, and renaming conversations can offer signals. Meaning is product-dependent: long companionship sessions may be desirable, while long support sessions may mean unresolved problems.</p><p>Integrated tools can observe edits and task use more directly than standalone chat products. Acceptance may reflect convenience rather than correctness. Distinguish satisfaction with format, usefulness, factuality, and outcome whenever the interaction allows it.</p></article></div></section>
+<section class="section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Feedback Design</h2></div><a class="source" href="../AI%20Engineering.pdf#page=504">Source: book pp. 480-490 / PDF p. 504</a><div class="grid"><article class="note "><h3>When to collect feedback</h3><p>Keep a nonintrusive route to report problems throughout the user journey. Initial preferences help cold start; targeted feedback is valuable after errors, at uncertainty points, and after meaningful successes.</p><p>Offer focused edits rather than forcing full regeneration when a small correction suffices. Pairwise drafts can clarify style preferences, but should not ask users to resolve technical correctness they cannot judge. Ask only when the information gained justifies interrupting the workflow.</p></article>
+<article class="note yellow"><h3>How to collect it</h3><p>Use clear, low-effort options tied to genuine actions: accept, edit, reject, regenerate, choose a candidate, or report a specific problem. Include “neither,” “unsure,” or “I don’t know” where appropriate. Test icon direction, label wording, scales, accessibility, and whether users interpret them correctly.</p><p>Decide whether feedback is private or visible to others. Public signals change behavior and can discourage candor; private signals have their own limitations. Balance opportunities for positive and negative feedback, and avoid rewarding only easily captured signals.</p></article></div></section>
+<section class="section" id="section-6"><div class="section-heading"><span class="section-number">06</span><h2>Feedback Limitations</h2></div><a class="source" href="../AI%20Engineering.pdf#page=514">Source: book pp. 490-494 / PDF p. 514</a><div class="grid"><article class="note "><h3>Bias, randomness, and degenerate loops</h3><p>Users can click randomly, prefer the first or most recent option, interpret scales differently, or favor pleasing wording over truth. Frequent users and readily measurable actions can be overrepresented. Human feedback is valuable but not automatically a correct target.</p><p>Exposure creates a loop: popular outputs are shown more, gain more feedback, and become still more dominant. The product’s focus and user population may narrow together. Preference optimization can encourage sycophancy and suppress diversity.</p><p>Audit subgroup and tail performance, preserve exploration, calibrate against correctness/expert evidence, and separate personalization from global behavior changes. Evaluate whether the feedback-driven update actually benefits users.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Where do privacy checks belong after context augmentation?</li><li>What distinguishes a router from a gateway?</li><li>How would cache keys prevent cross-user leakage?</li><li>Which trace fields explain a wrong final answer?</li><li>When does a longer conversation mean the system is getting worse?</li></ol><div class="callout">A dependable AI product combines evaluated components, trusted action boundaries, useful observability, and a governed feedback loop. Add complexity deliberately and keep the user’s real outcome in view.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
