@@ -1,0 +1,117 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Low-Code AI | Notes Index</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1{font-size:38px}h2{font-size:27px}.source,.meta{color:var(--muted);font-size:12px}.source{display:block;margin:4px 0 12px}.note{overflow-wrap:anywhere}.note h4{color:var(--cyan);margin:12px 0 5px}a{color:var(--cyan)}.chapter-list{padding:0;list-style:none}.chapter-list li{padding:13px 0;border-bottom:1px dashed var(--rule)}.chapter-list strong{display:block}.meta{margin-top:18px}.diagram{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:15px 0}.diagram span{border:1px solid var(--cyan);padding:8px 12px}.diagram b{color:var(--yellow)}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:var(--cyan)}
+@media(max-width:760px){h1{font-size:30px}h2{font-size:23px}}
+@media print{body{font-size:11pt;line-height:1.5}.grid{display:block}.note{margin-bottom:20px;break-inside:avoid}h1{font-size:26pt}h2{font-size:19pt}h3{font-size:14pt}.board{padding:5mm}.source,.meta{font-size:8pt}.section{padding:18px 0}.masthead{margin-bottom:20px}pre{font-size:9pt}}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">Book-Based Whiteboard Notes</div><h1>Low-Code AI</h1><p class="subtitle">Gwendolyn Stripling and Michael Abel | First edition, 2023</p><p class="thesis">9 chapters with explanations, formulas, practical workflows, caveats, and revision questions.</p></header><nav><a href="../index.html">All three books</a><a href="coverage.md">Coverage map</a></nav><section class="section"><ul class="chapter-list"><li><strong>1. How Data Drives Decision Making in Machine Learning</strong><a href="chapter-01-data-driven-workflow.html">HTML notes</a> / <a href="chapter-01-data-driven-workflow.pdf">PDF notes</a></li><li><strong>2. Data Is the First Step</strong><a href="chapter-02-data-first.html">HTML notes</a> / <a href="chapter-02-data-first.pdf">PDF notes</a></li><li><strong>3. Machine Learning Libraries and Frameworks</strong><a href="chapter-03-ml-frameworks.html">HTML notes</a> / <a href="chapter-03-ml-frameworks.pdf">PDF notes</a></li><li><strong>4. Use AutoML to Predict Advertising Media Channel Sales</strong><a href="chapter-04-automl-regression.html">HTML notes</a> / <a href="chapter-04-automl-regression.pdf">PDF notes</a></li><li><strong>5. Using AutoML to Detect Fraudulent Transactions</strong><a href="chapter-05-automl-fraud.html">HTML notes</a> / <a href="chapter-05-automl-fraud.pdf">PDF notes</a></li><li><strong>6. Using BigQuery ML to Train a Linear Regression Model</strong><a href="chapter-06-bigquery-ml.html">HTML notes</a> / <a href="chapter-06-bigquery-ml.pdf">PDF notes</a></li><li><strong>7. Training Custom ML Models in Python</strong><a href="chapter-07-custom-models.html">HTML notes</a> / <a href="chapter-07-custom-models.pdf">PDF notes</a></li><li><strong>8. Improving Custom Model Performance</strong><a href="chapter-08-model-improvement.html">HTML notes</a> / <a href="chapter-08-model-improvement.pdf">PDF notes</a></li><li><strong>9. Next Steps in Your AI Journey</strong><a href="chapter-09-next-steps.html">HTML notes</a> / <a href="chapter-09-next-steps.pdf">PDF notes</a></li></ul></section><p class="small">Self-contained offline HTML and chapter PDFs. Source-topic mapping is a structural coverage check, not proof that every source sentence or detail was reproduced. Use the book for full exercises, code, figures, and references. Historical API or cloud-console steps may need current documentation.</p></main></body></html>

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>AI Engineering | Book Notes</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">Complete Book Study Set</div><h1>AI Engineering</h1><p class="subtitle">Chapter-wise whiteboard notes</p><p class="thesis">Ten chapters covering the full engineering workflow, from foundation-model behavior and evaluation to retrieval, fine-tuning, data, inference, and production feedback.</p></header><section class="section"><h2>Reading Map</h2><p>Read Chapters 1-2 for foundations, 3-4 for evaluation, 5-6 for input-based adaptation, 7-8 for weight and data adaptation, and 9-10 for serving and operating systems.</p><ul class="chapter-list"><li><strong>Chapter 1: Building with Foundation Models</strong><span class="small">Book pp. 1-48</span><br><a href="chapter-01-introduction.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-01-introduction.pdf">PDF notes</a><p>Capabilities, product choices, use cases, and the AI engineering stack</p></li>
+<li><strong>Chapter 2: Understanding Foundation Models</strong><span class="small">Book pp. 49-112</span><br><a href="chapter-02-foundation-models.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-02-foundation-models.pdf">PDF notes</a><p>Training data, architecture, scaling, alignment, sampling, and probabilistic behavior</p></li>
+<li><strong>Chapter 3: Evaluation Methodology</strong><span class="small">Book pp. 113-158</span><br><a href="chapter-03-evaluation-methodology.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-03-evaluation-methodology.pdf">PDF notes</a><p>Language-model loss, functional tests, similarity, AI judges, and comparative rankings</p></li>
+<li><strong>Chapter 4: Evaluate AI Systems</strong><span class="small">Book pp. 159-210</span><br><a href="chapter-04-evaluate-ai-systems.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-04-evaluate-ai-systems.pdf">PDF notes</a><p>Application-specific criteria, model selection, benchmarks, and repeatable evaluation pipelines</p></li>
+<li><strong>Chapter 5: Prompt Engineering</strong><span class="small">Book pp. 211-252</span><br><a href="chapter-05-prompt-engineering.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-05-prompt-engineering.pdf">PDF notes</a><p>In-context learning, clear instructions, prompt experiments, and layered defenses</p></li>
+<li><strong>Chapter 6: RAG and Agents</strong><span class="small">Book pp. 253-306</span><br><a href="chapter-06-rag-and-agents.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-06-rag-and-agents.pdf">PDF notes</a><p>Retrieval algorithms, context optimization, tool planning, execution, evaluation, and memory</p></li>
+<li><strong>Chapter 7: Finetuning</strong><span class="small">Book pp. 307-362</span><br><a href="chapter-07-finetuning.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-07-finetuning.pdf">PDF notes</a><p>When to change weights, memory math, numerical formats, LoRA, model merging, and training tactics</p></li>
+<li><strong>Chapter 8: Dataset Engineering</strong><span class="small">Book pp. 363-404</span><br><a href="chapter-08-dataset-engineering.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-08-dataset-engineering.pdf">PDF notes</a><p>Data quality, diversity, quantity, acquisition, synthesis, distillation, and processing</p></li>
+<li><strong>Chapter 9: Inference Optimization</strong><span class="small">Book pp. 405-448</span><br><a href="chapter-09-inference-optimization.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-09-inference-optimization.pdf">PDF notes</a><p>Bottlenecks, latency and throughput, accelerators, model optimizations, and serving strategies</p></li>
+<li><strong>Chapter 10: Architecture and User Feedback</strong><span class="small">Book pp. 449-494</span><br><a href="chapter-10-architecture-user-feedback.html">HTML notes</a> &nbsp; / &nbsp; <a href="chapter-10-architecture-user-feedback.pdf">PDF notes</a><p>Production architecture, guardrails, routing, caches, observability, orchestration, and feedback design</p></li></ul></section><section class="section"><h2>Scope and Coverage</h2><p>These notes explain the book's core concepts, algorithms, decision frameworks, formulas, trade-offs, failure modes, and representative examples in original wording. Every contents-page section is mapped in <a href="coverage.md">coverage.md</a>. A section mapping confirms topic inclusion, not that every sentence or figure has been reproduced. Consult the supplied book for complete experiments, source code, citations, and finer detail.</p><p>The preface frames the book as a practical, start-simple framework, not a catalog of permanently current APIs. The epilogue emphasizes learning and building responsibly as the field changes. The bibliography and back-of-book index are lookup material rather than separate technical chapters.</p><p>The existing lecture notes remain unchanged. Each new HTML is self-contained with embedded styling and works offline; PDFs contain the corresponding chapter content.</p></section><footer>Based on the user-supplied AI Engineering PDF by Chip Huyen. No other supplied books were used.</footer></main></body></html>
