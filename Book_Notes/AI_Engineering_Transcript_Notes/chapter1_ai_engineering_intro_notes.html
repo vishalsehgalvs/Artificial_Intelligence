@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Detailed whiteboard-style notes introducing AI engineering and foundation models.">
+  <title>Chapter 1 | Introduction to AI Engineering</title>
+  <link rel="stylesheet" href="whiteboard-notes.css">
+</head>
+<body>
+  <main class="board">
+    <header class="masthead">
+      <div class="eyebrow">AI Engineering | Introductory Chapter</div>
+      <h1>Building with Foundation Models</h1>
+      <p class="subtitle">How AI engineering differs from traditional ML engineering</p>
+      <p class="thesis">AI engineering focuses on adapting foundation models into useful products. The work spans prompts, context, data, evaluation, interfaces, deployment, and iteration with users.</p>
+      <nav aria-label="Chapter sections">
+        <a href="#difference">AI vs ML</a><a href="#language-models">Language models</a><a href="#foundation">Foundation models</a><a href="#adaptation">Adaptation</a><a href="#planning">Product planning</a><a href="#stack">Engineering stack</a>
+      </nav>
+    </header>
+
+    <section class="section" id="difference">
+      <div class="section-heading"><span class="section-number">01</span><h2>AI Engineering vs. ML Engineering</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Traditional ML engineering</h3>
+          <p>Often centers on building, training, and deploying a task-specific model. The typical flow is:</p>
+          <div class="flow"><div class="step">Data</div><span class="arrow">&rarr;</span><div class="step">Train model</div><span class="arrow">&rarr;</span><div class="step">Product</div></div>
+          <p>The team may focus primarily on the data-to-model portion. For conventional classification, outputs are usually drawn from a fixed set of labels, making ground-truth evaluation comparatively direct.</p>
+        </article>
+        <article class="note yellow">
+          <h3>AI engineering</h3>
+          <p>Usually starts from an already-trained foundation model and adapts it to an application rather than training a frontier-scale model from scratch.</p>
+          <div class="flow"><div class="step">Product idea</div><span class="arrow">&rarr;</span><div class="step">Data + model adaptation</div><span class="arrow">&rarr;</span><div class="step">Evaluate and iterate</div></div>
+          <p>Because output is often open-ended, evaluation is harder. The engineer is closer to the full product loop: user need, data, model behavior, interface, and deployment.</p>
+        </article>
+        <article class="note cyan wide">
+          <h3>Why foundation models changed the workflow</h3>
+          <ul class="checklist">
+            <li>General-purpose capabilities grew as models, compute, and training data scaled.</li>
+            <li>Model-as-a-service APIs let developers use powerful models without hosting large GPU clusters themselves.</li>
+            <li>Lower infrastructure and coding barriers expanded who can prototype AI applications.</li>
+            <li>Foundation models can support many tasks through prompting, retrieval, and fine-tuning.</li>
+            <li>Production work still requires product judgment, data governance, evaluation, and reliability engineering.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="language-models">
+      <div class="section-heading"><span class="section-number">02</span><h2>Language Models and Self-Supervision</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Language model (LM)</h3>
+          <p>A language model captures statistical patterns in one or more languages and learns to predict tokens. A <strong>token</strong> is the basic unit processed by the model; it may be a word, part of a word, punctuation, or another text unit.</p>
+          <p><strong>Tokenization</strong> maps raw text into token IDs. Subword methods, including byte-pair encoding, use a finite vocabulary while allowing unfamiliar words to be represented as smaller known pieces.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Why self-supervised learning scales</h3>
+          <p>Instead of manually labeling every training example, the data itself supplies prediction targets. For next-token prediction, earlier tokens are the input and the next token is the target.</p>
+          <div class="equation">&lt;BOS&gt; I love &nbsp;&rarr; predict “good”<br>&lt;BOS&gt; I love good &nbsp;&rarr; predict the next token</div>
+          <p>This creates many learning examples from ordinary text and reduces the manual-labeling bottleneck. It enabled training on very large token collections.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Two language-model objectives</h3>
+          <ul>
+            <li><strong>Masked language model:</strong> predict a hidden token using context on both sides. BERT is a familiar example.</li>
+            <li><strong>Autoregressive language model:</strong> predict the next token using only preceding tokens; future tokens are not visible. This is the common text-generation setup.</li>
+          </ul>
+          <p>Pre-training teaches broad patterns through token prediction. Post-training then teaches the model to follow instructions and exhibit desired behaviors.</p>
+        </article>
+        <article class="note pink">
+          <h3>Parameters</h3>
+          <p>Parameters are learned numerical values that encode patterns useful to the model. Training updates parameters to improve the chosen objective; prompting does not itself update them.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="foundation">
+      <div class="section-heading"><span class="section-number">03</span><h2>From LMs to Foundation Models</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Broader capabilities</h3>
+          <p>A foundation model is trained broadly and can be adapted to many downstream tasks. Language-only models process text; multimodal foundation models can represent or process combinations such as text and images, and may also work with audio or video.</p>
+          <p>In a multimodal model, a prediction can depend on multiple modalities, not only preceding text tokens.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Embeddings and CLIP</h3>
+          <p>An <strong>embedding</strong> is a vector representation intended to capture useful meaning or relationships in data.</p>
+          <p>CLIP (Contrastive Language-Image Pre-training) learns a shared representation for paired images and captions. Matching image-text pairs are encouraged to be close in a joint embedding space; unrelated pairs are separated.</p>
+          <div class="flow"><div class="step">Image encoder</div><span class="arrow">+</span><div class="step">Text encoder</div><span class="arrow">&rarr;</span><div class="step">Compare joint embeddings</div></div>
+        </article>
+        <article class="note cyan wide">
+          <h3>Open-ended generation</h3>
+          <p>Generative models can produce many valid outputs for one request. A summary, explanation, or conversation does not have one simple ground-truth label, so the quality criteria must account for relevance, factuality, coherence, safety, and usefulness.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="adaptation">
+      <div class="section-heading"><span class="section-number">04</span><h2>Three Ways to Adapt a Foundation Model</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>1. Prompting</h3>
+          <p>Specify the task, constraints, desired format, and relevant examples in the input. Prompt engineering improves the instructions and context sent to the model without changing its weights.</p>
+        </article>
+        <article class="note yellow">
+          <h3>2. Retrieval-augmented generation (RAG)</h3>
+          <p>Retrieve relevant information from a data source and place it in the prompt. Grounding answers in current or private information can improve relevance and reduce unsupported claims, though retrieval quality and context design still matter.</p>
+        </article>
+        <article class="note cyan">
+          <h3>3. Fine-tuning</h3>
+          <p>Train on examples to change model behavior. Parameter-efficient methods update a smaller subset of parameters; full fine-tuning updates the full model. Choose based on task, data, compute, and measured benefit.</p>
+        </article>
+        <article class="note pink">
+          <h3>Common application areas</h3>
+          <p>Conversation, writing, coding, image or video production, education, information synthesis across workplace sources, and workflow automation are examples. Enterprise use often places additional emphasis on privacy, access control, and risk.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="planning">
+      <div class="section-heading"><span class="section-number">05</span><h2>Plan the Product Before Scaling the Model</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Use-case evaluation</h3>
+          <p>Start with a real user or business problem. Ask whether an AI solution is worthwhile relative to its cost, effort, operational risk, and expected benefit. Competitive pressure alone does not establish that a use case will succeed.</p>
+          <p>Keep a human in the loop where oversight, correction, or approval is important. Product development is iterative: prototype, evaluate, learn from use, and revise.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Set measurable expectations</h3>
+          <p>Translate business outcomes into AI-system measures instead of treating model scores as the goal.</p>
+          <ul>
+            <li><strong>Quality:</strong> task success, factuality, relevance, and safety.</li>
+            <li><strong>Latency:</strong> time to first token (TTFT), time per output token (TPOT), and total response time.</li>
+            <li><strong>Cost:</strong> cost per request, token usage, and serving compute.</li>
+            <li><strong>Responsible use:</strong> fairness, privacy, and interpretability where relevant.</li>
+          </ul>
+          <div class="equation">Approximate total generation time = TTFT + (TPOT &times; generated output tokens)</div>
+        </article>
+        <article class="note cyan">
+          <h3>Milestones and maintenance</h3>
+          <p>Define milestones, delivery dates, and explicit success criteria. After launch, monitor quality, usage, cost, and risks; maintain the system and revisit its cost-benefit case as user behavior and business needs change.</p>
+        </article>
+        <article class="note pink">
+          <h3>AI engineering is a product loop</h3>
+          <div class="flow"><div class="step">Product need</div><span class="arrow">&rarr;</span><div class="step">Data + model</div><span class="arrow">&rarr;</span><div class="step">Product evaluation</div><span class="arrow">&circlearrowleft;</span></div>
+          <p>Foundation-model APIs let teams test a product idea without first building a foundation model. Real usage can reveal which data and model improvements are worth investing in.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="stack">
+      <div class="section-heading"><span class="section-number">06</span><h2>The AI Engineering Stack</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Application development</h3>
+          <ul>
+            <li>Evaluation of the user-facing behavior.</li>
+            <li>Prompt engineering and context construction.</li>
+            <li>Retrieval, tools, and agent workflows.</li>
+            <li>User interfaces and product experience.</li>
+          </ul>
+        </article>
+        <article class="note yellow">
+          <h3>Model development</h3>
+          <ul>
+            <li>Modeling, training, and adaptation.</li>
+            <li>Dataset engineering and curation.</li>
+            <li>Model evaluation.</li>
+            <li>Inference optimization for speed and cost.</li>
+          </ul>
+        </article>
+        <article class="note cyan">
+          <h3>Infrastructure</h3>
+          <ul>
+            <li>Compute and data management.</li>
+            <li>Serving models reliably.</li>
+            <li>Monitoring, logging, and operational support.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Key distinction</h3>
+          <p>ML engineering often owns a narrower data-to-model pipeline. AI engineering connects product design to foundation-model adaptation, application behavior, and operations. It is broader and more full-stack, while still relying on collaboration across specialties.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>Prepared from the supplied introductory transcript. Technical examples are summarized in their lecture context.</footer>
+  </main>
+</body>
+</html>
