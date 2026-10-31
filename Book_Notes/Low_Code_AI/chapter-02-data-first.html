@@ -1,0 +1,120 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Low-Code AI | Data Is the First Step</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1{font-size:38px}h2{font-size:27px}.source,.meta{color:var(--muted);font-size:12px}.source{display:block;margin:4px 0 12px}.note{overflow-wrap:anywhere}.note h4{color:var(--cyan);margin:12px 0 5px}a{color:var(--cyan)}.chapter-list{padding:0;list-style:none}.chapter-list li{padding:13px 0;border-bottom:1px dashed var(--rule)}.chapter-list strong{display:block}.meta{margin-top:18px}.diagram{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:15px 0}.diagram span{border:1px solid var(--cyan);padding:8px 12px}.diagram b{color:var(--yellow)}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:var(--cyan)}
+@media(max-width:760px){h1{font-size:30px}h2{font-size:23px}}
+@media print{body{font-size:11pt;line-height:1.5}.grid{display:block}.note{margin-bottom:20px;break-inside:avoid}h1{font-size:26pt}h2{font-size:19pt}h3{font-size:14pt}.board{padding:5mm}.source,.meta{font-size:8pt}.section{padding:18px 0}.masthead{margin-bottom:20px}pre{font-size:9pt}}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">Low-Code AI | Chapter 2</div><h1>Data Is the First Step</h1><p class="thesis">Use the project datasets to understand measurement types, data structures, file formats, ingestion patterns, and reproducible notebook/repository workflows.</p><p class="meta">Original study notes based on Gwendolyn Stripling and Michael Abel, First edition, 2023. Book pp. 17-48. Source APIs, services, experiments, and model comparisons reflect the book's publication period. These are explanatory summaries, not verbatim reproductions or a claim that every source detail is retained.</p><nav aria-label="Notes navigation"><a href="index.html">All chapters</a><a href="#topic-1">The book’s project datasets</a><a href="#topic-2">Quantitative, qualitative, and data structures</a><a href="#topic-3">File types and processing modes</a><a href="#topic-4">GitHub data repository and Colab</a></nav></header><div class="diagram" aria-label="Chapter workflow"><span>Find data source</span><b>&rarr;</b><span>Inspect schema + types</span><b>&rarr;</b><span>Load and profile</span><b>&rarr;</b><span>Clean + document</span><b>&rarr;</b><span>Version data + notebook</span></div><section class="section"><h2>Detailed Notes</h2><div class="grid"><article class="note " id="topic-1"><h3>The book’s project datasets</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=33">Source: book pp. 17-23 / PDF p. 33</a><p>The examples span retail price, healthcare outreach, energy use/production, advertising sales, financial fraud, telecommunications churn, and used-car auctions. Each dataset teaches a different target and workflow; names and sample values do not remove the need to inspect actual columns, units, labels, and provenance.</p><p>Use a data dictionary and business context. Ask what one row represents, how the label is produced, when features become available, and whether records are independent. Confirm licensing and sensitive information before uploading to a cloud notebook or repository.</p></article>
+<article class="note yellow" id="topic-2"><h3>Quantitative, qualitative, and data structures</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=39">Source: book pp. 23-25 / PDF p. 39</a><p>Quantitative values can be continuous or discrete; qualitative values describe categories, labels, or text. Encodings can obscure meaning: an integer category code is not necessarily a numeric magnitude.</p><p><strong>Structured</strong> data follows a schema, often tabular. <strong>Semi-structured</strong> data has nested/key-value organization such as JSON. <strong>Unstructured</strong> data includes free text, images, and audio. Each needs different parsing, validation, and feature construction. Missing, invalid, and unknown values need distinct handling where they mean different things.</p></article>
+<article class="note cyan" id="topic-3"><h3>File types and processing modes</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=41">Source: book pp. 25-27 / PDF p. 41</a><p>CSV is portable but weakly typed; inspect delimiter, quoting, encoding, null markers, and date parsing. JSON supports nesting; Parquet and similar columnar formats support efficient typed analytics; image/audio files need metadata and label alignment.</p><p><strong>Batch</strong> data arrives in collections or scheduled snapshots; <strong>streaming</strong> data arrives continuously. Their latency, ordering, state, and validation needs differ. Avoid reading only the first few rows and assuming the full file is clean. Validate row counts, schema, duplicates, and date coverage.</p></article>
+<article class="note pink" id="topic-4"><h3>GitHub data repository and Colab</h3><a class="source" href="../../Low-Code-AI-A-Practical-Project-Driven-Introduction-to-Machine-Learning.pdf#page=43">Source: book pp. 27-48 / PDF p. 43</a><p>A repository can version notebooks, documentation, small sample data, and transformation code. Large/private production data may require separate storage, access controls, or data-versioning tools; never commit secrets or restricted records.</p><p>Colab provides a hosted notebook environment, but runtime state is temporary. Mounting cloud drives and downloading datasets require explicit permissions. Keep notebooks restartable: record packages, inputs, seeds, and steps; use relative/configurable paths; clear sensitive outputs; and rerun from a clean runtime before sharing.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Which columns are measurements and which are categories?</li><li>Is this data batch or streaming?</li><li>What should not be committed to GitHub?</li><li>Can the notebook reproduce its results from a clean runtime?</li></ol><div class="callout">Data format, schema, provenance, and ingestion are part of the model. Inspect before transformation and make the analysis reproducible.</div></section><footer>Source links refer to the supplied PDF. Every contents-page topic is mapped in coverage.md. Consult the book for complete implementations, figures, exercises, citations, and experiment evidence.</footer></main></body></html>
