@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 5 | Prompt Engineering</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 5</div><h1>Prompt Engineering</h1><p class="subtitle">In-context learning, clear instructions, prompt experiments, and layered defenses</p><p class="thesis">Treat prompts as versioned interfaces. State the task clearly, supply the information needed, test variations systematically, and never rely on prompt wording alone to enforce security boundaries.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=235">Source: book pp. 211-252 / PDF p. 235</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">Introduction to Prompting</a><a href="#section-2">Prompt Engineering Best Practices</a><a href="#section-3">Defensive Prompt Engineering</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>Introduction to Prompting</h2></div><a class="source" href="../AI%20Engineering.pdf#page=236">Source: book pp. 212-220 / PDF p. 236</a><div class="grid"><article class="note "><h3>In-context learning: zero-shot and few-shot</h3><p>Prompt-based adaptation changes inputs, not model parameters. <strong>Zero-shot</strong> gives no demonstrations; <strong>few-shot</strong> supplies examples showing the desired mapping. More examples can help coverage but consume tokens, introduce bias, or distract the model.</p><p>Choose examples for relevance, consistency, and useful diversity. In-context learning can supply new information beyond training, but it does not persistently update weights. A model must already have enough capability and instruction-following ability to use the prompt; no phrasing trick guarantees missing skills.</p></article>
+<article class="note yellow"><h3>System/user messages and chat templates</h3><p>System messages typically define persistent application instructions; user messages contain the current request. Other roles carry prior assistant outputs and tool results. The model sees their serialized representation according to a specific chat template.</p><p>Use the exact tokenizer/template for the model version. Duplicated special tokens, wrong separators, missing role boundaries, and double-applied templates can quietly degrade behavior. When replacing models, retest the entire prompt construction path. Role labels help express instruction hierarchy but do not alone create secure isolation.</p></article>
+<article class="note cyan"><h3>Context length versus context efficiency</h3><p>A large advertised window describes how much the model accepts, not how reliably it uses all of it. Context efficiency asks whether it can find and combine relevant information wherever it appears. Needle-in-a-haystack and RULER-style tests probe long-context behavior, but simple needle retrieval does not establish multi-hop reasoning.</p><p>Test different lengths, evidence positions, distractors, and cross-document requirements. Longer prompts raise processing costs and can introduce conflicting information. Include the most useful context rather than filling the window merely because it exists.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Prompt Engineering Best Practices</h2></div><a class="source" href="../AI%20Engineering.pdf#page=244">Source: book pp. 220-235 / PDF p. 244</a><div class="grid"><article class="note "><h3>Write clear and explicit instructions</h3><p>State the task, audience, required information, constraints, and output format without ambiguity. A persona can establish perspective but is not a substitute for criteria. Show representative examples when prose alone leaves room for interpretation.</p><p>Make compatible instructions; avoid asking simultaneously for extreme brevity and exhaustive explanation. Specify valid labels, schemas, refusal/uncertainty behavior, and whether extra commentary is allowed. Compact examples can reduce cost if evaluation confirms they teach the same behavior.</p></article>
+<article class="note yellow"><h3>Provide sufficient context</h3><p>Give facts the model needs, or provide authorized retrieval tools. Distinguish quoted source data from instructions and make provenance visible. Requests to use only supplied context should define what to do if evidence is missing or contradictory.</p><p>Prompting a model not to use outside knowledge is not a guarantee. For sensitive tasks, validate support for important claims or use constrained/extractive workflows. Missing context is often a retrieval/data problem rather than an instruction-wording problem.</p></article>
+<article class="note cyan"><h3>Break complex tasks into simpler subtasks</h3><p>Separate intent classification, evidence collection, transformation, and answer generation when each needs different instructions or checks. Route to task-specific prompts instead of packing every possible workflow into one prompt. Parallelize independent steps where appropriate.</p><p>Benefits include modular testing, better debugging, and use of cheaper specialized models. Costs include more calls, intermediate failures, and higher end-to-end latency. Evaluate the full pipeline: a stronger intermediate result does not guarantee a better final answer.</p></article>
+<article class="note pink"><h3>Give the model time to think</h3><p>The book discusses chain-of-thought examples, task decomposition, and reasoning before an answer. These can improve multi-step tasks in some models, but their benefit depends on model training, task difficulty, and cost.</p><p>Use worked examples, explicit intermediate checks, or an appropriate reasoning model. Do not treat a convincing explanation as proof, and do not assume hidden/internal reasoning must be exposed to the user. Verify results independently when possible; longer output creates additional latency and opportunities for error.</p></article>
+<article class="note "><h3>Iterate and evaluate tools</h3><p>Run prompt experiments on fixed evaluation data, track model/version/sampling, and compare quality, cost, latency, and robustness. Try meaningful perturbations, not just one hand-picked happy path. Read model guidance and learn its behavior before adopting elaborate abstractions.</p><p>Prompt optimizers can generate candidates or mutations and select better variants. Their gains depend on evaluation quality and can overfit the development set. Framework defaults can contain typos, wrong templates, or unannounced changes. Inspect the final prompt sent to the model.</p></article>
+<article class="note yellow"><h3>Organize and version prompts</h3><p>Separate reusable prompt definitions from business logic; name and document their purpose, model/template dependencies, schema, examples, and evaluation history. Store prompts as code or structured files so subject-matter experts can review them.</p><p>A versioned prompt catalog lets applications pin different versions; shared files that change automatically can force every consumer to migrate at once. Log the effective prompt and version, and review prompt changes like interface changes. Preserve rollback paths and avoid embedding secrets.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Defensive Prompt Engineering</h2></div><a class="source" href="../AI%20Engineering.pdf#page=259">Source: book pp. 235-252 / PDF p. 259</a><div class="grid"><article class="note "><h3>Threat model and proprietary prompts</h3><p>Risks include prompt disclosure, unauthorized information access, harmful generated content, unexpected code/tool execution, and manipulation of application decisions. Proprietary prompt secrecy is not a reliable security boundary or durable product moat.</p><p>Reverse prompt engineering attempts to infer or extract hidden instructions. Even if the system prompt is exposed, the application should not reveal credentials or bypass permissions. Keep secrets out of model-visible context and enforce access through trusted application components.</p></article>
+<article class="note yellow"><h3>Jailbreaking and prompt injection</h3><p>Jailbreaking aims to bypass model restrictions; prompt injection attempts to redirect an application through model-visible instructions. Direct malicious requests and indirect instructions embedded in retrieved pages, emails, files, or tool outputs have different entry points.</p><p>Indirect injection is especially important because ordinary legitimate tasks can bring attacker-controlled content into context. A document being summarized is evidence, not an authorized operator. Automated adversarial testing can uncover failures, but defenses must be assessed across realistic tool workflows and languages.</p></article>
+<article class="note cyan"><h3>Information extraction, memorization, and rights</h3><p>Models can sometimes regurgitate training data, sensitive personal information, or copyrighted material. The ability to generate text does not imply the information is authorized to disclose. Memorization, extraction risk, and ordinary public knowledge are different phenomena.</p><p>Review training/source rights, reduce unnecessary sensitive context, limit retrieval by access permissions, and inspect outputs. No output detector proves the absence of private or copyrighted material. Provider terms and dataset licenses deserve explicit review before reusing outputs for training or commercial products.</p></article>
+<article class="note pink"><h3>Defenses at model, prompt, and system levels</h3><ul><li><strong>Model:</strong> adversarial training and instruction-hierarchy training to distinguish trusted directions from untrusted data.</li><li><strong>Prompt:</strong> explicit boundaries, clearly delimited inputs, repeated task reminders where useful, and safe handling of unsupported requests.</li><li><strong>System:</strong> authentication, least-privilege tools, schema/argument validation, sandboxed execution, allowlists, rate limits, anomaly detection, output checks, and human approval for consequential writes.</li></ul><p>Measure refusal false positives as well as attack success. No single guardrail is foolproof. Test layers together and assume untrusted retrieved content will eventually contain adversarial instructions.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>When do more demonstrations hurt?</li><li>How would you verify the correct chat template?</li><li>What does a large context window fail to guarantee?</li><li>When is decomposition worth its added latency?</li><li>Which security decisions must live outside the prompt?</li></ol><div class="callout">Use explicit instructions and evidence, then earn confidence through tests. Prompt quality is important, but permissions and safety must also be enforced outside generation.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
