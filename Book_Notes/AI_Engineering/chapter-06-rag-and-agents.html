@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Detailed original study notes from Chip Huyen's AI Engineering book."><title>Chapter 6 | RAG and Agents</title><style>@page { size: A4; margin: 10mm; }
+
+:root {
+  color-scheme: dark;
+  --board: #080a0b;
+  --ink: #f5f2e9;
+  --yellow: #f5d735;
+  --green: #a7f078;
+  --cyan: #52d8dc;
+  --pink: #ff91a9;
+  --muted: #c4c6bf;
+  --rule: rgba(245, 242, 233, .26);
+  --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #111415;
+  color: var(--ink);
+  font: 16px/1.6 var(--hand);
+}
+.board {
+  max-width: 1440px;
+  margin: 24px auto;
+  padding: clamp(24px, 5vw, 72px);
+  overflow: hidden;
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+  background-size: 28px 28px;
+  border: 1px solid #252a2b;
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+}
+.masthead { max-width: 980px; margin: 0 auto 34px; text-align: center; }
+.eyebrow, .section-number { color: var(--cyan); font-size: 13px; font-weight: 700; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin: 8px 0 12px;
+  color: var(--yellow);
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.15;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 9px;
+}
+.subtitle { margin: 20px 0; font-size: 19px; }
+.thesis {
+  margin: 0 auto;
+  padding: 12px 18px;
+  border-block: 2px solid var(--green);
+  color: var(--green);
+  font-size: 17px;
+}
+nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin-top: 22px; }
+nav a { color: var(--cyan); text-underline-offset: 4px; }
+a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+.section { padding: 28px 0 38px; border-top: 1px dashed var(--rule); scroll-margin-top: 16px; }
+.section-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 22px; }
+h2 {
+  margin-bottom: 0;
+  color: var(--yellow);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 7px;
+}
+h3 { margin-bottom: 8px; color: var(--green); font-size: 19px; line-height: 1.35; }
+p { margin-bottom: 11px; }
+ul, ol { margin: 7px 0 13px; padding-left: 23px; }
+li { margin: 3px 0; padding-left: 3px; }
+li::marker { color: var(--cyan); }
+strong { color: var(--yellow); }
+em { color: var(--cyan); font-style: normal; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 36px; }
+.note { min-width: 0; padding-left: 16px; border-left: 2px solid var(--green); }
+.note.yellow { border-color: var(--yellow); }
+.note.cyan { border-color: var(--cyan); }
+.note.pink { border-color: var(--pink); }
+.wide { grid-column: 1 / -1; }
+.flow { display: flex; align-items: stretch; flex-wrap: wrap; gap: 8px; margin: 13px 0; }
+.step { flex: 1 1 140px; min-width: 0; padding: 9px 11px; border: 1px solid var(--green); text-align: center; }
+.arrow { align-self: center; color: var(--yellow); font-size: 21px; }
+.equation { margin: 12px 0; padding: 9px 13px; border-left: 3px solid var(--cyan); color: var(--cyan); overflow-wrap: anywhere; }
+.callout { margin: 13px 0; padding: 11px 14px; border: 1px dashed var(--yellow); color: var(--yellow); }
+.small { color: var(--muted); font-size: 14px; }
+.pink-text { color: var(--pink); }
+table { width: 100%; margin: 12px 0; border-collapse: collapse; text-align: left; }
+th, td { padding: 8px 9px; border-bottom: 1px dashed var(--rule); vertical-align: top; }
+th { color: var(--cyan); }
+.checklist { columns: 2; column-gap: 30px; }
+.checklist li { break-inside: avoid; }
+footer { padding-top: 20px; border-top: 1px dashed var(--rule); color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 760px) {
+  .board { margin: 0; padding: 26px 19px; border-radius: 0; }
+  .grid { grid-template-columns: 1fr; gap: 21px; }
+  .wide { grid-column: auto; }
+  .checklist { columns: 1; }
+  .step { flex-basis: 100%; }
+  .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+}
+@media print {
+  :root { color-scheme: dark; }
+  body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .board { max-width: none; margin: 0; padding: 5mm; border: 0; border-radius: 0; box-shadow: none; }
+  nav { display: none; }
+  .section { break-inside: auto; }
+  .note { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+h1 { font-size: 40px; }
+h2 { font-size: 28px; }
+.source { color: var(--muted); font-size: 12px; text-decoration: none; }
+.source:hover { color: var(--cyan); text-decoration: underline; }
+.note { overflow-wrap: anywhere; }
+.note h4 { color: var(--cyan); margin: 14px 0 5px; font-size: 16px; }
+.equation { font-family: var(--hand); }
+.book-meta { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.chapter-list { list-style: none; padding: 0; }
+.chapter-list li { padding: 14px 0; border-bottom: 1px dashed var(--rule); }
+.chapter-list a { color: var(--cyan); }
+.chapter-list strong { display: block; }
+@media (max-width: 760px) { h1 { font-size: 32px; } h2 { font-size: 24px; } }
+@media print {
+  body { font-size: 11pt; line-height: 1.5; }
+  h1 { font-size: 27pt; }
+  h2 { font-size: 20pt; }
+  h3 { font-size: 14pt; }
+  .grid { display: block; }
+  .note { margin-bottom: 17px; break-inside: avoid; }
+  .section { padding: 18px 0 12px; }
+  .masthead { margin-bottom: 20px; }
+  .small { font-size: 9pt; }
+  .source { font-size: 8pt; }
+  .book-meta { font-size: 9pt; }
+}
+</style></head><body><main class="board"><header class="masthead"><div class="eyebrow">AI Engineering | Book-Based Notes | Chapter 6</div><h1>RAG and Agents</h1><p class="subtitle">Retrieval algorithms, context optimization, tool planning, execution, evaluation, and memory</p><p class="thesis">RAG obtains useful information; agents choose and execute actions toward goals. Both depend on explicit context, trustworthy tools, observable intermediate states, and evaluation of the final task.</p><p class="book-meta">Source: Chip Huyen, <i>AI Engineering: Building Applications with Foundation Models</i>, first edition (2025). <a class="source" href="../AI%20Engineering.pdf#page=277">Source: book pp. 253-306 / PDF p. 277</a>. These are original study notes, not verbatim chapter reproductions. Tool names, prices, model comparisons, and research findings reflect the book's publication period unless stated otherwise.</p><nav aria-label="Chapter navigation"><a href="index.html">All chapters</a><a href="#section-1">RAG Architecture and Retrieval Algorithms</a><a href="#section-2">Retrieval Optimization and RAG Beyond Text</a><a href="#section-3">Agents: Overview, Tools, and Planning</a><a href="#section-4">Agent Failure Modes and Evaluation</a><a href="#section-5">Memory</a></nav></header><section class="section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>RAG Architecture and Retrieval Algorithms</h2></div><a class="source" href="../AI%20Engineering.pdf#page=277">Source: book pp. 253-267 / PDF p. 277</a><div class="grid"><article class="note "><h3>Why retrieval, and what gets indexed?</h3><p>RAG retrieves query-specific information from external memory and supplies it to a generator. It supports current/private facts, large knowledge collections, and source-grounded responses without embedding all facts in weights. Retrieval augments context; it does not guarantee the generator uses it correctly.</p><p><strong>Indexing path:</strong> ingest and parse documents, preserve metadata/permissions, chunk, create indexes. <strong>Query path:</strong> interpret query, retrieve candidate chunks, optionally filter/rerank, construct context, generate, validate. For a small knowledge base, placing all relevant content in a long context can be a useful baseline; compare actual accuracy and cost rather than assuming RAG is mandatory.</p></article>
+<article class="note yellow"><h3>Term-based retrieval: TF-IDF and BM25</h3><p>An inverted index maps terms to documents containing them. Term frequency captures occurrence; inverse document frequency downweights ubiquitous terms. BM25 adds term-frequency saturation and document-length normalization and remains a strong, inexpensive baseline.</p><p>Term retrieval is fast, transparent, and good for identifiers, exact part numbers, and distinctive names. It can miss synonyms or ambiguous wording. Tokenization, stop words, stemming, language, and query normalization affect results. Sparse versus dense is a representation distinction; learned sparse systems mean it is not identical to lexical versus semantic.</p></article>
+<article class="note cyan"><h3>Embedding-based retrieval and vector search</h3><p>Encode chunks and queries into compatible vector spaces, then search for nearby chunk vectors. Semantic retrieval can match paraphrases and bridge lexical variation, but requires relevant embeddings and carries indexing/query costs.</p><p>Brute-force nearest neighbors are expensive at scale. Approximate nearest-neighbor (ANN) search trades exactness for speed. The book discusses locality-sensitive hashing, tree/partition approaches such as inverted-file indexes, product quantization, and graph search such as HNSW. Storing vectors is easy; maintaining efficient search, filtering, updates, and consistency is the harder database problem.</p></article>
+<article class="note pink"><h3>Evaluate retrieval and combine algorithms</h3><p>Context precision is the relevant fraction of retrieved items; recall is the recovered fraction of all relevant items. Recall is harder to label because it requires knowing missing relevant items. MRR, MAP, and NDCG assess rankings; ANN recall measures recovery relative to exact nearest neighbors and is different from relevance recall.</p><p>Also measure indexing time, query latency/QPS, storage, update speed, and access controls. Hybrid search combines lexical and semantic strengths. Reciprocal-rank fusion combines rankings without requiring comparable raw scores:</p><div class="equation">RRF score(d) = &Sigma;<sub>retrievers</sub> 1 / (k + rank(d))</div><p>Rerank candidates with a more expensive model only when the quality gain justifies latency.</p></article></div></section>
+<section class="section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Retrieval Optimization and RAG Beyond Text</h2></div><a class="source" href="../AI%20Engineering.pdf#page=291">Source: book pp. 267-275 / PDF p. 291</a><div class="grid"><article class="note "><h3>Chunking strategy</h3><p>Choose boundaries by tokens, sentences, paragraphs, sections, layout, or meaning. Small chunks allow precise matches and more diverse evidence; overly small chunks lose context. Large chunks preserve relationships but can waste context budget and dilute relevance.</p><p>Overlap, parent-document links, titles, and metadata preserve meaning across boundaries. Evaluate table/code handling and the tokenizer assumptions. Rechunking or changing embeddings can require expensive reindexing. There is no universally best chunk size; tune against representative questions and storage/latency constraints.</p></article>
+<article class="note yellow"><h3>Reranking, query rewriting, contextual retrieval</h3><ul><li><strong>Reranking:</strong> apply a stronger relevance model to initial candidates and select evidence within the generator’s budget.</li><li><strong>Query rewriting:</strong> resolve conversational references, normalize wording, expand terms, or decompose a question. Do not invent missing entity relationships.</li><li><strong>Contextual retrieval:</strong> enrich chunks with relevant document-level context, metadata, or generated questions before indexing so isolated fragments become findable.</li></ul><p>Search ranking determines which evidence is included; ordering within the prompt also affects use, especially with long-context position effects. Test both separately.</p></article>
+<article class="note cyan"><h3>Multimodal and tabular RAG</h3><p>Multimodal retrieval can index captions/metadata or use joint embeddings to retrieve images, text, and other content. The generator must be able to consume the retrieved modality or a faithful representation of it.</p><p>For structured data, a typical flow is schema/table selection, text-to-SQL generation, safe query execution, and answer generation from results. Validate SQL, restrict permissions, cap costs, and retain query/results for audit. Numerical aggregations belong in reliable computation tools rather than free-form guessing.</p></article></div></section>
+<section class="section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Agents: Overview, Tools, and Planning</h2></div><a class="source" href="../AI%20Engineering.pdf#page=299">Source: book pp. 275-298 / PDF p. 299</a><div class="grid"><article class="note "><h3>Agent, environment, goal, and tool inventory</h3><p>An agent perceives an environment and selects actions toward a goal under constraints. A foundation model often supplies the planner, but the system also needs tool execution, state, evaluation, and stopping rules. A fixed retrieval pipeline and a dynamic agent differ in who selects actions and how control flow adapts.</p><p>Tools support <strong>knowledge augmentation</strong> (search/database reads), <strong>capability extension</strong> (calculation, code, conversion), and <strong>write actions</strong> (messages, orders, record changes). More tools increase opportunity and selection difficulty. Expose a minimal useful inventory with clear names, schemas, descriptions, and error behavior.</p></article>
+<article class="note yellow"><h3>Planning and function calling</h3><p>Plan against both the goal and constraints such as budget, deadline, and permissions. A plan may cover the whole task or only the next step. Natural-language plans can be translated to executable calls; direct structured tool plans skip that translator but must match valid API syntax.</p><p>The model proposes a function name and arguments; trusted application code checks and executes it, then returns an observation. A valid function name or JSON schema does not prove correct arguments or authorization. Validate preconditions and results, handle unavailable tools, and reject infeasible/out-of-scope requests early.</p></article>
+<article class="note cyan"><h3>Control flow, reflection, and correction</h3><p>Workflows may be sequential, parallel, conditional, or iterative. Some steps depend on earlier observations, so blindly executing a full initial plan can fail. The book treats general LLM planning ability as an open research question, not an established guarantee.</p><p><strong>ReAct</strong> interleaves reasoning/action with observations. <strong>Reflexion</strong> separates outcome evaluation and analysis of what went wrong so later attempts can use the lesson. Reflection can occur before a plan, after a tool call, or after completion. It must lead to grounded correction, not merely additional confident text. Limit retries, steps, and cost.</p></article>
+<article class="note pink"><h3>Tool selection and extensibility</h3><p>Use ablations to see which tools actually improve success. Remove tools that add confusion without helping; redesign descriptions or APIs that models frequently misuse. Monitor transitions between tools to discover useful combinations or reusable skills.</p><p>Check whether a framework supports your control flows, state persistence, new tools, and observability. A second agent can evaluate a plan, but more agents also create communication, coordination, latency, and debugging costs.</p></article></div></section>
+<section class="section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>Agent Failure Modes and Evaluation</h2></div><a class="source" href="../AI%20Engineering.pdf#page=322">Source: book pp. 298-300 / PDF p. 322</a><div class="grid"><article class="note "><h3>Separate planning, tools, and efficiency</h3><p><strong>Planning failures:</strong> invalid steps, wrong order, ignored constraints, incorrect assumptions, or failure to stop. <strong>Tool failures:</strong> wrong selection, arguments, permissions, unavailable capability, API exceptions, incorrect tool results, or errors translating a high-level plan.</p><p>Test tools independently and inspect each call and observation. Measure actual end-to-end completion, constraint satisfaction, latency, cost, number of calls, redundant actions, and recovery. A successful intermediate plan is not a completed task, and success after a deadline may be failure. Run state-changing evaluations in a sandbox with controlled resources.</p></article></div></section>
+<section class="section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Memory</h2></div><a class="source" href="../AI%20Engineering.pdf#page=324">Source: book pp. 300-306 / PDF p. 324</a><div class="grid"><article class="note "><h3>Three memory mechanisms</h3><p><strong>Internal knowledge:</strong> parameters learned during training. <strong>Short-term memory:</strong> immediately available context. <strong>Long-term memory:</strong> externally stored information retrieved when needed.</p><p>Put durable general behavior in weights when appropriate, infrequently needed facts in retrievable storage, and current-task state in context. External memory can preserve structured records, reduce repetitive input, support personalization, and calibrate consistency, but needs access, update, correction, and deletion policies.</p></article>
+<article class="note yellow"><h3>Managing a finite context</h3><p>Conversation history, tools, evidence, plans, and reflections compete for the same window. FIFO or last-N retention is easy but may delete the original goal. Summarization saves space while risking omission; removing redundant/less relevant material and retaining key facts can be better.</p><p>Combine retained instructions, rolling summaries, structured task state, and retrieval of older relevant records. Check that memories remain accurate and authorized; remembered model errors can otherwise become persistent false “facts.” Memory quality must be evaluated by downstream task success, not simply recall quantity.</p></article></div></section><section class="section"><h2>Revision Check</h2><ol><li>Why is BM25 a useful baseline even when embeddings are available?</li><li>How do relevance recall and ANN recall differ?</li><li>Which chunking failure could hide an answer across two pages?</li><li>What validates a tool call before execution?</li><li>How could FIFO memory destroy the task goal?</li></ol><div class="callout">Retrieve evidence with measurable relevance, execute tools through trusted controls, and evaluate complete tasks. Add dynamic planning only when it earns its complexity.</div></section><footer>Book-based notes, separate from the earlier transcript-based notes. Coverage is indexed by section in coverage.md. Source links open the supplied book at the relevant PDF page. Detailed examples, citations, and complete experimental evidence remain in the book.</footer></main></body></html>
