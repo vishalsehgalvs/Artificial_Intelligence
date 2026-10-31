@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Detailed whiteboard-style notes for Chapter 8: Dataset Engineering.">
+  <title>Chapter 8 | Dataset Engineering</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --board: #080a0b;
+      --ink: #f5f2e9;
+      --yellow: #f5d735;
+      --green: #a7f078;
+      --cyan: #52d8dc;
+      --pink: #ff91a9;
+      --muted: #c4c6bf;
+      --rule: rgba(245, 242, 233, .26);
+      --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background-color: #111415;
+      color: var(--ink);
+      font-family: var(--hand);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .board {
+      position: relative;
+      isolation: isolate;
+      max-width: 1440px;
+      margin: 24px auto;
+      padding: clamp(24px, 5vw, 72px);
+      overflow: hidden;
+      background-color: var(--board);
+      background-image: radial-gradient(rgba(230, 239, 230, .17) 1px, transparent 1.2px);
+      background-size: 28px 28px;
+      border: 1px solid #252a2b;
+      border-radius: 10px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, .35);
+    }
+
+    .masthead {
+      max-width: 950px;
+      margin: 0 auto 48px;
+      text-align: center;
+    }
+
+    .eyebrow, .section-number, .tag {
+      color: var(--cyan);
+      text-transform: uppercase;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 12px;
+      color: var(--yellow);
+      font-size: clamp(32px, 5vw, 58px);
+      line-height: 1.15;
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 9px;
+    }
+
+    .subtitle {
+      margin: 20px 0 24px;
+      color: var(--ink);
+      font-size: 20px;
+    }
+
+    .thesis {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      border-top: 2px solid var(--green);
+      border-bottom: 2px solid var(--green);
+      color: var(--green);
+      font-size: 18px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 18px;
+      margin-top: 26px;
+    }
+
+    nav a {
+      color: var(--cyan);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 4px;
+    }
+
+    a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 4px; }
+
+    .section {
+      padding: 32px 0 44px;
+      border-top: 1px dashed var(--rule);
+      scroll-margin-top: 20px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      margin-bottom: 0;
+      color: var(--yellow);
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.25;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 7px;
+    }
+
+    h3 {
+      margin-bottom: 9px;
+      color: var(--green);
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    p { margin-bottom: 12px; }
+
+    ul, ol { margin: 8px 0 14px; padding-left: 24px; }
+    li { padding-left: 3px; margin: 3px 0; }
+    li::marker { color: var(--cyan); }
+
+    strong { color: var(--yellow); font-weight: 700; }
+    em { color: var(--cyan); font-style: normal; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 26px 42px;
+    }
+
+    .note {
+      min-width: 0;
+      padding-left: 17px;
+      border-left: 2px solid var(--green);
+    }
+
+    .note.yellow { border-color: var(--yellow); }
+    .note.cyan { border-color: var(--cyan); }
+    .note.pink { border-color: var(--pink); }
+
+    .wide { grid-column: 1 / -1; }
+
+    .flow {
+      display: flex;
+      align-items: stretch;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .step {
+      flex: 1 1 150px;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid var(--green);
+      color: var(--ink);
+      text-align: center;
+    }
+
+    .arrow {
+      align-self: center;
+      color: var(--yellow);
+      font-size: 22px;
+    }
+
+    .equation {
+      margin: 14px 0;
+      padding: 10px 14px;
+      border-left: 3px solid var(--cyan);
+      color: var(--cyan);
+      overflow-wrap: anywhere;
+    }
+
+    .callout {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border: 1px dashed var(--yellow);
+      color: var(--yellow);
+    }
+
+    .small { color: var(--muted); font-size: 14px; }
+    .pink-text { color: var(--pink); }
+
+    table {
+      width: 100%;
+      margin: 14px 0;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px dashed var(--rule);
+      vertical-align: top;
+    }
+
+    th { color: var(--cyan); font-weight: 700; }
+
+    .checklist {
+      columns: 2;
+      column-gap: 36px;
+    }
+
+    .checklist li { break-inside: avoid; }
+
+    footer {
+      padding-top: 24px;
+      border-top: 1px dashed var(--rule);
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .board { margin: 0; padding: 28px 20px; border-radius: 0; }
+      .grid { grid-template-columns: 1fr; gap: 24px; }
+      .wide { grid-column: auto; }
+      .checklist { columns: 1; }
+      .flow { gap: 6px; }
+      .step { flex-basis: 100%; }
+      .arrow { width: 100%; text-align: center; transform: rotate(90deg); }
+    }
+
+    @media print {
+      :root { color-scheme: dark; }
+      body { background: var(--board); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .board { max-width: none; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+      nav { display: none; }
+      .section { break-inside: auto; }
+      .note { break-inside: avoid; }
+      h2, h3 { break-after: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="board">
+    <header class="masthead">
+      <div class="eyebrow">AI Engineering | Chapter 8</div>
+      <h1>Dataset Engineering</h1>
+      <p class="subtitle">Detailed study notes from the lecture transcript</p>
+      <p class="thesis">A model's capability depends on both its architecture and the data it learns from. Dataset engineering builds the most useful training set possible within quality, coverage, privacy, and budget constraints.</p>
+      <nav aria-label="Chapter sections">
+        <a href="#purpose">Purpose</a>
+        <a href="#curation">Curation</a>
+        <a href="#mix">Data mix</a>
+        <a href="#acquisition">Acquisition</a>
+        <a href="#synthesis">Synthesis</a>
+        <a href="#workflows">Workflows</a>
+        <a href="#verification">Verification</a>
+        <a href="#processing">Processing</a>
+      </nav>
+    </header>
+
+    <section class="section" id="purpose">
+      <div class="section-heading"><span class="section-number">01</span><h2>Why Dataset Engineering?</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>The data-centric view</h3>
+          <p><strong>Model-centric AI</strong> seeks progress mainly through better architectures and models. <strong>Data-centric AI</strong> seeks progress through better data, curation, and processing methods. Dataset engineering emphasizes the latter.</p>
+          <p>As many teams build services on top of existing open-source or foundation models, high-quality task data becomes an important differentiator. The goal is not simply to collect more data; it is to create data that teaches the desired capability efficiently.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Dataset engineering loop</h3>
+          <div class="flow" aria-label="Dataset engineering stages">
+            <div class="step">Curate<br><span class="small">choose and shape examples</span></div><span class="arrow">&rarr;</span>
+            <div class="step">Generate<br><span class="small">real, augmented, or synthetic</span></div><span class="arrow">&rarr;</span>
+            <div class="step">Process<br><span class="small">clean, deduplicate, format</span></div>
+          </div>
+          <p class="small">Repeat the loop using evaluation results; keep the task and budget in view.</p>
+        </article>
+        <article class="note cyan">
+          <h3>What is counted?</h3>
+          <ul>
+            <li><strong>Pre-training:</strong> commonly discussed in number of tokens.</li>
+            <li><strong>Post-training:</strong> commonly discussed in examples, such as instruction-response pairs or preference comparisons.</li>
+          </ul>
+          <p>The unit reflects the training stage and its data format.</p>
+        </article>
+        <article class="note pink">
+          <h3>Three training stages</h3>
+          <p><strong>Pre-training</strong> gives broad patterns and knowledge; <strong>supervised fine-tuning (SFT)</strong> teaches task behavior from demonstrations; <strong>preference fine-tuning</strong> aligns outputs using comparative preferences or related feedback.</p>
+          <p class="small">The same data proportions are not automatically right for every stage.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="curation">
+      <div class="section-heading"><span class="section-number">02</span><h2>Curation: Teach the Intended Behavior</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Match the data shape to the learning objective</h3>
+          <table>
+            <thead><tr><th>Training objective</th><th>Typical example structure</th></tr></thead>
+            <tbody>
+              <tr><td>Self-supervised learning</td><td>A sequence of tokens or data for the model to continue/predict.</td></tr>
+              <tr><td>Instruction fine-tuning</td><td>Instruction or prompt + target response.</td></tr>
+              <tr><td>Preference fine-tuning</td><td>Instruction + preferred (winning) response + dispreferred (losing) response.</td></tr>
+              <tr><td>Reward-model training</td><td>Instruction + response + preference score or label.</td></tr>
+            </tbody>
+          </table>
+        </article>
+        <article class="note yellow">
+          <h3>Reasoning and tool use</h3>
+          <ul>
+            <li><strong>Chain-of-thought demonstrations:</strong> worked examples show intermediate reasoning steps. For a multi-step arithmetic question, demonstrate each operation rather than only the final number.</li>
+            <li><strong>Tool-use examples:</strong> show when and how a tool is used, including the resulting observation and response.</li>
+            <li><strong>Single-turn:</strong> one instruction followed by one answer.</li>
+            <li><strong>Multi-turn:</strong> the assistant can clarify intent, ask follow-up questions, use tools, and continue the exchange.</li>
+          </ul>
+          <p class="small">Training examples should reflect the interaction pattern expected at inference time.</p>
+        </article>
+        <article class="note cyan">
+          <h3>What makes data high quality?</h3>
+          <ul>
+            <li><strong>Relevant:</strong> appropriate to the model's real use case and domain.</li>
+            <li><strong>Task-aligned:</strong> follows the intended instructions, audience, tone, and safety requirements.</li>
+            <li><strong>Consistent:</strong> examples use compatible labeling and response standards.</li>
+            <li><strong>Correctly formatted:</strong> matches the schema, chat template, or tool-call format the model must learn.</li>
+            <li><strong>Unique:</strong> avoids unnecessary duplication and evaluation leakage.</li>
+            <li><strong>Compliant:</strong> respects privacy, licensing, regulation, and applicable norms.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Quality can outweigh raw count</h3>
+          <p>The lecture describes the LIMA result as an example: a 65-billion-parameter LLaMA model fine-tuned on about 1,000 carefully curated instructions reportedly performed better than GPT-4 in 43% of that study's comparisons.</p>
+          <p>This illustrates the value of careful examples; it is <strong>not</strong> a general claim that 1,000 examples always outperform larger datasets or stronger models. Human-created data can contain errors, so review and AI-assisted annotation may help, with quality checks.</p>
+        </article>
+        <article class="note wide yellow">
+          <h3>Coverage and diversity</h3>
+          <p><strong>Coverage</strong> means representing the range of problems the model is expected to solve. <strong>Diversity</strong> means varying the topics, inputs, language, task types, edge cases, and speaking patterns within that range.</p>
+          <ul class="checklist">
+            <li>Include the chatbot's expected subject areas.</li>
+            <li>Represent local dialects and different ways people phrase requests.</li>
+            <li>Include relevant math and high-quality code tasks.</li>
+            <li>Cover common cases and important rare or difficult cases.</li>
+            <li>Check for missing categories, not only total example count.</li>
+            <li>Keep examples aligned with current real-world topics and use.</li>
+          </ul>
+          <p>Small, high-quality math and code fine-tuning sets have been reported to improve broader model benchmarks; structured data can contribute useful, diverse patterns.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="mix">
+      <div class="section-heading"><span class="section-number">03</span><h2>Data Mix, Quantity, and Fine-Tuning Choices</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Choose a stage-specific mixture</h3>
+          <p>A data mixture might combine general knowledge, question answering, math, code, and other task data. The useful proportions can differ between pre-training, SFT, and preference fine-tuning.</p>
+          <p>Do not assume the pre-training mix should simply be copied into every later stage. Experiment with proportions and measure the capabilities that matter.</p>
+          <div class="callout">Practical approach: test candidate mixtures on smaller, faster-to-train models, then use scaling-law evidence to inform larger runs. Treat extrapolation as an estimate that still needs validation.</div>
+        </article>
+        <article class="note yellow">
+          <h3>Quantity is important, but not alone</h3>
+          <p>The lecture gives approximate scale examples: LLaMA 2 trained on around <strong>2 trillion tokens</strong> and LLaMA 3 on around <strong>16 trillion tokens</strong>. Large pre-training runs need enormous token volumes, but post-training value also depends on example quality and task coverage.</p>
+          <p><strong>Diminishing returns:</strong> adding examples often improves performance, but the gain per added example tends to shrink. The first well-designed examples can have especially high value; later additions should target remaining gaps.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Three factors for fine-tuning decisions</h3>
+          <ol>
+            <li><strong>Data amount:</strong> how many trustworthy, relevant examples are available?</li>
+            <li><strong>Task complexity:</strong> how much behavior must the model learn?</li>
+            <li><strong>Base-model capability:</strong> how well does the starting model already perform?</li>
+          </ol>
+          <p>Full fine-tuning updates the model broadly and generally needs more data and resources. <strong>PEFT</strong> (parameter-efficient fine-tuning) updates a smaller set of parameters, making it useful when data or compute is limited.</p>
+        </article>
+        <article class="note pink">
+          <h3>Rule of thumb from the lecture</h3>
+          <ul>
+            <li><strong>Few examples:</strong> prefer a capable base model and PEFT; stronger models can often learn more from limited demonstrations.</li>
+            <li><strong>Many examples:</strong> consider full fine-tuning of a smaller, less expensive model when evaluation shows comparable task performance.</li>
+          </ul>
+          <p class="small">The lecture cites an SNLI experiment: the gap between weaker and stronger models was more pronounced with very little fine-tuning data and narrowed as the number of examples grew. These are decision heuristics, not universal laws.</p>
+        </article>
+        <article class="note wide">
+          <h3>Start small; let evaluation decide whether to scale</h3>
+          <div class="flow" aria-label="Small-data curation workflow">
+            <div class="step">Craft a small, high-quality seed set<br><span class="small">for example, about 50 cases</span></div><span class="arrow">&rarr;</span>
+            <div class="step">Fine-tune and evaluate<br><span class="small">measure target behaviors</span></div><span class="arrow">&rarr;</span>
+            <div class="step">Improve or expand<br><span class="small">scale only after seeing value</span></div>
+          </div>
+          <p>If a small set produces gains, add targeted examples. If it does not, diagnose the task definition, labels, formatting, and example quality before scaling. A staged approach can also work: broad or less task-specific learning first, then a smaller high-quality task-specific set.</p>
+          <p>Fine-tuning across a <strong>diverse set of tasks</strong> can improve held-out performance and often helps generalization, with gains eventually plateauing. Measure both task breadth and model scale.</p>
+        </article>
+        <article class="note yellow wide">
+          <h3>Fine-tuning may not always change a model as expected</h3>
+          <p>The lecture refers to <strong>model ossification</strong>: in some cases, fine-tuning (particularly on small models or with limited adaptation) may not shift parameters or behavior enough to achieve the desired change. Treat this as a warning to evaluate the actual before-and-after behavior and consider the method, data, and base model together.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="acquisition">
+      <div class="section-heading"><span class="section-number">04</span><h2>Acquisition, Annotation, and Augmentation</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Acquire data responsibly</h3>
+          <ul>
+            <li>Respect user privacy and applicable data regulations.</li>
+            <li>Confirm that source data and any model-generated derivatives may be used for the intended purpose.</li>
+            <li>Track provenance and rights; synthetic output does not automatically remove restrictions inherited from its source or generator.</li>
+          </ul>
+          <p><strong>Data flywheel:</strong> people use a product, their interactions or feedback produce useful signals, and approved signals can help improve the product. User-provided content and system-generated usage/feedback data are distinct sources and need appropriate governance.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Annotation guidelines</h3>
+          <p>Write clear, specific instructions for labelers and reviewers. Define the schema, edge cases, what counts as a correct answer, and how to handle ambiguity. Consistent rules reduce disagreement and make the dataset teach a coherent behavior.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Augmentation vs. synthesis</h3>
+          <table>
+            <thead><tr><th>Method</th><th>Core idea</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td>Data augmentation</td><td>Transform or perturb existing real examples while preserving the intended label or meaning.</td><td>Crop, flip, or rescale an image; carefully perturb text or pixels.</td></tr>
+              <tr><td>Data synthesis</td><td>Create new examples that mimic important properties of real data.</td><td>Generate a new scenario, instruction, or simulated interaction.</td></tr>
+            </tbody>
+          </table>
+          <p>Augmentation can improve robustness to variation and help address representation gaps, but transformations must preserve correctness. A perturbed image should still depict the intended class.</p>
+        </article>
+        <article class="note pink">
+          <h3>Why synthesize data?</h3>
+          <ul>
+            <li><strong>Quantity:</strong> produce more examples at useful scale.</li>
+            <li><strong>Coverage:</strong> fill sparse areas, rare cases, and adversarial conditions.</li>
+            <li><strong>Quality:</strong> create preference or task examples with consistent structure, then verify them.</li>
+            <li><strong>Privacy:</strong> support development where sensitive real records cannot be shared or reused.</li>
+            <li><strong>Distillation:</strong> use a larger teacher model's outputs to train a smaller student model.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="synthesis">
+      <div class="section-heading"><span class="section-number">05</span><h2>How Synthetic Data Is Generated</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Procedural generation</h3>
+          <p>Algorithms create examples according to explicit rules or a simulated environment.</p>
+          <ul>
+            <li><strong>Rule-based templates:</strong> define fields, then populate them with controlled values or a random-data tool. Example fields could include age, blood group, and symptoms in a fictional health record.</li>
+            <li><strong>Transformations:</strong> perturb data, replace selected tokens, or modify pixels to build robustness examples. Labels must remain valid.</li>
+            <li><strong>Simulation:</strong> execute possible actions in a virtual environment, test outcomes, and record successful trajectories. This can be cheaper and safer than collecting every event in the physical world.</li>
+          </ul>
+        </article>
+        <article class="note yellow">
+          <h3>Simulation for tool use</h3>
+          <div class="flow" aria-label="Simulation-generated tool-use example">
+            <div class="step">User query</div><span class="arrow">&rarr;</span>
+            <div class="step">Try action sequences in simulator</div><span class="arrow">&rarr;</span>
+            <div class="step">Validate and select an efficient sequence</div><span class="arrow">&rarr;</span>
+            <div class="step">Store query + action sequence</div>
+          </div>
+          <p>Simulators can create examples for rare or costly events and for tool interactions such as navigating an interface. The action trajectory should be checked before being treated as a target demonstration.</p>
+        </article>
+        <article class="note cyan">
+          <h3>AI-powered synthesis</h3>
+          <ul>
+            <li>Use a model to paraphrase, translate, or vary seed examples.</li>
+            <li>Ask a model to simulate API outputs for offline dataset creation when live calls are costly; verify that simulated outputs are realistic.</li>
+            <li>Translate high-resource-language data into a lower-resource language, then use back-translation or other review to check meaning preservation.</li>
+            <li>Use an AI judge with response order swapped to reduce first-position bias. Prefer a candidate only if its quality remains supported when ordering changes.</li>
+          </ul>
+          <p class="small">Illustrative lecture examples: MetaMath expanded roughly 15,000 math seeds to about 400,000 variants; reported gains depend on the data, model, and evaluation.</p>
+        </article>
+        <article class="note pink">
+          <h3>Instruction datasets from seed examples</h3>
+          <p><strong>UltraChat:</strong> the lecture describes using a model to expand topics into subtopics and generate multi-turn instruction-dialogue examples across a broad topic range.</p>
+          <p><strong>Alpaca:</strong> the lecture describes using about 175 seed instructions and a GPT-3-family model to generate varied instruction-response examples, expanding the collection to roughly 52,000 examples.</p>
+          <p class="small">Generated examples need screening for correctness, diversity, and repetition; count alone is not a quality guarantee.</p>
+        </article>
+        <article class="note wide yellow">
+          <h3>Reverse instruction: start from trusted content</h3>
+          <p>Long AI-written answers may hallucinate. A reverse-instruction method starts with existing high-quality content and asks a model to generate an instruction or question that the content answers. This is an inverse mapping: <em>content &rarr; plausible prompt</em>.</p>
+          <ol>
+            <li>Start with a small seed set and train an initial, weaker model.</li>
+            <li>Provide high-quality source content and ask the model to produce instruction-content pairs.</li>
+            <li>Fine-tune on reviewed pairs, then repeat with suitable source material.</li>
+            <li>Stop when measured target performance is sufficient; retain source rights and provenance.</li>
+          </ol>
+          <p>The content source must be legally and ethically usable. Iteration can improve the generator, but it can also amplify errors if generated pairs are not checked.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="workflows">
+      <div class="section-heading"><span class="section-number">06</span><h2>Two Useful Synthesis Workflows</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Long-context fine-tuning: 8K to 64K example</h3>
+          <p>When a model answers well from a short context but struggles to find information in a much longer one, use the short-context ability to create reliable answer targets first.</p>
+          <ol>
+            <li>Split a long document into chunks that fit the known reliable context size (the lecture example uses 8K-token chunks from a 64K-token document).</li>
+            <li>Create question-answer pairs for each chunk, where the answer is grounded in that chunk.</li>
+            <li>For fine-tuning, present each question with the <strong>full 64K context</strong> and train toward the answer already established from the smaller chunk.</li>
+          </ol>
+          <p>This teaches the model to locate relevant evidence across the longer input while avoiding the need to trust an answer generated directly from a context length it cannot yet handle reliably.</p>
+        </article>
+        <article class="note cyan">
+          <h3>LLaMA 3 code-data synthesis, as described</h3>
+          <ol>
+            <li>Generate a programming problem description.</li>
+            <li>Generate solutions in multiple programming languages.</li>
+            <li>Generate unit tests and run them to verify solutions.</li>
+            <li>Use failures to identify and repair incorrect solutions.</li>
+            <li>Translate a verified fix across the other languages, then test those versions too.</li>
+            <li>Add code explanations or conversations so the model learns to discuss code as well as produce it.</li>
+          </ol>
+          <p>The lecture reports creating about <strong>2.7 million synthetic code-related examples</strong> for supervised fine-tuning of LLaMA 3.1. The key idea is to combine generation with executable validation, not to accept generated code unchecked.</p>
+        </article>
+        <article class="note wide yellow">
+          <h3>Verification should match the task</h3>
+          <div class="flow" aria-label="Verification levels">
+            <div class="step">Can correctness be executed or measured directly?<br><span class="small">Use tests, constraints, or deterministic checks first.</span></div><span class="arrow">&rarr;</span>
+            <div class="step">If not, use expert review or a calibrated AI verifier<br><span class="small">Record uncertainty and audit samples.</span></div><span class="arrow">&rarr;</span>
+            <div class="step">Keep only examples that meet the quality bar</div>
+          </div>
+          <p>Code is a convenient synthesis domain because unit tests can check functional behavior. For open-ended text, AI verifiers can score examples or assign topic metadata, but they can share the generator's biases and should not be treated as ground truth.</p>
+          <p><strong>Back-translation:</strong> translate an example from language A to B, then use a trusted translator to translate it back to A. Compare meaning, not only exact wording. It is a useful sampled check for translation quality, not proof that every example is correct.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="verification">
+      <div class="section-heading"><span class="section-number">07</span><h2>Risks and Limits of AI-Generated Data</h2></div>
+      <div class="grid">
+        <article class="note pink">
+          <h3>1. Quality control is hard</h3>
+          <p>Reliable metrics and review methods are needed. A detector that cannot distinguish a synthetic example from real data does not by itself prove the example is accurate, useful, or safe.</p>
+        </article>
+        <article class="note yellow">
+          <h3>2. Superficial imitation</h3>
+          <p>A student model may copy a teacher's style and frequent patterns without learning factual consistency or generalizing to real inputs. This can preserve or introduce hallucinations.</p>
+        </article>
+        <article class="note cyan">
+          <h3>3. Mode collapse and diversity loss</h3>
+          <p>Generators tend to produce common, high-probability cases more often than rare ones. Training repeatedly on generated outputs can amplify common patterns and erase rare cases over iterations.</p>
+          <div class="equation">common patterns &uarr; each round &nbsp; | &nbsp; rare patterns &darr; each round</div>
+          <p>Keep real-data anchors, explicitly preserve rare-case coverage, deduplicate, and audit category distributions over successive generations.</p>
+        </article>
+        <article class="note pink">
+          <h3>4. Bias and lineage</h3>
+          <p>Synthetic data may reproduce the generator's biases. Its provenance can also become difficult to trace, including whether the generator learned from material that cannot legally or ethically be reused.</p>
+          <p>Track source, model, prompt, generation date, review status, and permissions where feasible.</p>
+        </article>
+        <article class="note wide">
+          <h3>Think in terms of risk controls, not “synthetic = safe”</h3>
+          <ul class="checklist">
+            <li>Review representative samples manually.</li>
+            <li>Use executable checks wherever possible.</li>
+            <li>Measure coverage and rare-case retention.</li>
+            <li>Compare generated examples with trusted real examples.</li>
+            <li>Track lineage, licensing, privacy, and consent.</li>
+            <li>Evaluate the trained model on held-out real data.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="processing">
+      <div class="section-heading"><span class="section-number">08</span><h2>Preprocessing: Clean, Deduplicate, Format</h2></div>
+      <div class="grid">
+        <article class="note">
+          <h3>Inspect and clean</h3>
+          <p>Manually inspect representative records and remove irrelevant artifacts such as unwanted HTML tags, malformed markup, or noise. Filtering should preserve useful meaning and not silently remove important subgroups.</p>
+        </article>
+        <article class="note yellow">
+          <h3>Why deduplication matters</h3>
+          <p>Repeated training examples can over-weight a narrow pattern; duplicates between training and evaluation can contaminate test results and make reported performance misleading. Deduplicate before training and check for train-test overlap.</p>
+          <p class="small">The lecture emphasizes that even a small duplicated fraction, repeated many times, can materially affect measured performance.</p>
+        </article>
+        <article class="note cyan">
+          <h3>Ways to find duplicates</h3>
+          <ul>
+            <li><strong>Pairwise comparison:</strong> exact match, n-gram overlap, or semantic similarity. Direct all-pairs comparison is expensive at scale.</li>
+            <li><strong>Hashing/bucketing:</strong> group likely matches, then compare only within candidate buckets to reduce work.</li>
+            <li><strong>Embedding reduction:</strong> reduce vector dimensionality before similarity comparisons to lower computation; preserve enough information for the similarity task.</li>
+          </ul>
+        </article>
+        <article class="note pink">
+          <h3>Clean and filter deliberately</h3>
+          <ul>
+            <li><strong>Active learning:</strong> prioritize examples expected to be most informative for the model or labelers.</li>
+            <li><strong>Importance sampling:</strong> sample strategically rather than uniformly when the task and sampling weights justify it.</li>
+            <li>Track filtering rules and inspect what gets removed so rare but important cases are not lost.</li>
+          </ul>
+        </article>
+        <article class="note wide yellow">
+          <h3>Format examples to match the chat template</h3>
+          <p>The model learns structure as well as meaning. Use the same role markers, separators, field names, and answer boundaries at training and inference time.</p>
+          <div class="grid">
+            <div class="note cyan">
+              <h3>Consistent examples</h3>
+              <p>Input: <em>Item: burger</em><br>Target: <strong>edible</strong></p>
+              <p>Input: <em>Item: car</em><br>Target: <strong>inedible</strong></p>
+              <p>Input: <em>Item: mushroom</em><br>Target: <strong>edible</strong></p>
+            </div>
+            <div class="note pink">
+              <h3>Keep the same pattern at use time</h3>
+              <p>Input: <em>Item: vegetable</em><br>Expected target: the label in the trained format.</p>
+              <p class="small">If training examples use a precise prefix or delimiter, changing it at inference can change the model's behavior. Treat the template as part of the interface contract.</p>
+            </div>
+          </div>
+        </article>
+        <article class="note wide">
+          <h3>Chapter takeaway</h3>
+          <p>Define the behavior first; curate examples that teach it; measure quality, coverage, and the data mix; acquire and synthesize responsibly; verify generated examples; then clean, deduplicate, and format consistently. Scale only when evaluation shows what additional data should accomplish.</p>
+          <div class="flow" aria-label="End-to-end data engineering cycle">
+            <div class="step">Define task</div><span class="arrow">&rarr;</span>
+            <div class="step">Curate + acquire</div><span class="arrow">&rarr;</span>
+            <div class="step">Generate + verify</div><span class="arrow">&rarr;</span>
+            <div class="step">Clean + format</div><span class="arrow">&rarr;</span>
+            <div class="step">Train + evaluate</div><span class="arrow">&rarr;</span>
+            <div class="step">Revise the dataset</div>
+          </div>
+          <p class="small">Next topic mentioned in the lecture: inference optimization, with attention to serving cost and latency.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      Prepared from the supplied Chapter 8 transcript. Examples and reported figures are attributed to the lecture and should be interpreted in their experimental context.
+    </footer>
+  </main>
+</body>
+</html>
